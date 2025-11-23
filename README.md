@@ -9,6 +9,7 @@ Aplikasi yang akan dibuat bernama Parkingly yang memungkinkan pengguna untuk mel
 - 🔵 [Drive dokumen](https://drive.google.com/drive/folders/1cyqF4U8dpLJOzde2isi9cRhaTVICb4Hb?usp=sharing )
 - 🔵 Link desain: {...}
 - 🔵 [Link pengumpulan monitoring RPL](https://forms.gle/kZs1g5QCwCTRw1pGA)
+- 🔵 [Skematik WokWi](https://wokwi.com/projects/448224765608390657)
 
 ### Stack
 - 🟢 HTML/CSS/JavaScript
