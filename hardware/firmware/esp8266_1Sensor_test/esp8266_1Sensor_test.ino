@@ -10,9 +10,9 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-// Ultrasonic Pins (USE D PINS from Wemos D1 Mini)
-#define trigPin D2     // GPIO5
-#define echoPin D1     // GPIO4
+// Ultrasonic Pins
+#define trigPin D2     
+#define echoPin D1     
 
 // WiFi Credentials
 const char* ssid = "realme 8i";
