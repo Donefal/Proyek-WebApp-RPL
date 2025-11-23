@@ -23,8 +23,12 @@ Command diatas akan mengizinkan user saat ini untuk menjalankan script pada powe
 Apabila Virtual Environment sudah berjalan akan ada `(.venv)` sebelum direktori pada terminal. Akan muncul file `.venv` juga pada folder backend
 
 ### 5. Instalasi dependencies
-```pip install -r requirements.txt```
+```powershell
+pip install -r requirements.txt
+```
 
 ### 6. Keluar dari Virtual Environment
 Gunakan ini apabila ingin mengerjakan bagian lain selain Backend. Cukup dengan command:
-```deactivate```
+```powershell
+deactivate
+```
