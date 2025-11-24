@@ -29,3 +29,50 @@ Irdhan: Frontend (HTML/CSS/JS)
 ref gpt https://chatgpt.com/s/t_691fbbdbbe4c8191943c4325af96020b 
 
 UI figma https://www.figma.com/design/9frmEQL3vleBFF2hyxTNTm/Untitled?m=dev&t=7jvFiXfBvYlcRK0V-1
+
+# Paket 1 – Core Setup (paling penting dulu)
+- Berisi file dasar agar project langsung jalan:
+- main.jsx
+- App.jsx
+- routes/AppRoutes.jsx
+- services/api.js
+- Struktur folder minimal versi hidup
+
+# Paket 2 – Auth (Login + Register)
+Berisi:
+- pages/Login.jsx
+- pages/Register.jsx
+- services/auth.js
+- components/Input.jsx
+- components/Button.jsx
+- hooks/useAuth.js
+
+# Paket 3 – Map Parkir (live availability)
+- pages/Map.jsx
+- components/MapSlot.jsx
+- services/slots.js
+
+# Paket 4 – Karcis (QR, timer, harga)
+- pages/Karcis.jsx
+- components/QRViewer.jsx
+- services/ticket.js
+
+# Paket 5 – E-Wallet
+- pages/Ewallet.jsx
+- services/wallet.js
+
+# Paket 6 – Admin
+- pages/admin/AdminDashboard.jsx
+- pages/admin/AdminScan.jsx
+- components/QRScanner.jsx
+- services/admin.js
+
+# Paket 7 – Utils / Helpers
+- utils/formatCurrency.js
+- utils/formatTime.js
+- utils/constants.js
+
+# Paket 8 – Layouts
+- layouts/UserLayout.jsx
+- layouts/AdminLayout.jsx
+- components/Navbar.jsx
