@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
 from database import Base
@@ -25,22 +25,26 @@ class Mikrokontroler(Base):
 
     id_mikrokontroler = Column(Integer, primary_key=True, index=True)
 
-    # relasi ke sensor & aktuator
-    sensor = relationship("Sensor", back_populates="mikrokontroler")
+    # relasi ke slot & aktuator
+    slot = relationship("Slot", back_populates="mikrokontroler")
     aktuator = relationship("Aktuator", back_populates="mikrokontroler")
 
 
 # ================================
-# TABLE SENSOR
+# TABLE SLOT
 # ================================
-class Sensor(Base):
-    __tablename__ = "sensor"
+class Slot(Base):
+    __tablename__ = "slot_condition"
 
-    id_sensor = Column(Integer, primary_key=True, index=True)
+    id_slot = Column(Integer, primary_key=True, index=True)
+    booked = Column(Boolean)
+    confirmed = Column(Boolean)
+    calculated = Column(Boolean)
+    occupied = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
-    mikrokontroler = relationship("Mikrokontroler", back_populates="sensor")
+    mikrokontroler = relationship("Mikrokontroler", back_populates="slot")
 
 
 # ================================
@@ -50,6 +54,8 @@ class Aktuator(Base):
     __tablename__ = "aktuator"
 
     id_aktuator = Column(Integer, primary_key=True, index=True)
+    nama_aktuator = Column(String(100))
+    kondisi = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
