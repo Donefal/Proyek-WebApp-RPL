@@ -76,3 +76,109 @@ Berisi:
 - layouts/UserLayout.jsx
 - layouts/AdminLayout.jsx
 - components/Navbar.jsx
+
+
+---
+---
+
+# fungsi setiap pages
+
+# Paket 1 – Struktur Halaman & Fungsinya
+
+Berikut daftar lengkap halaman beserta fungsi utamanya berdasarkan diagram aktivitas dan diagram sekuens.
+
+---
+
+## 1. Login Page
+**Fungsi:**
+- Form input email/username & password.
+- Mengirim request verifikasi akun ke backend.
+- Menampilkan status verifikasi (berhasil/gagal).
+- Redirect ke halaman “Map Kesediaan” jika sukses.
+
+---
+
+## 2. Register Page
+**Fungsi:**
+- Form registrasi: nama, email/no-telp, password.
+- Request pembuatan akun ke backend.
+- Menampilkan status registrasi.
+- Redirect ke Login jika sukses.
+
+---
+
+## 3. Map Kesediaan (Halaman Utama Pemesan)
+**Fungsi:**
+- Menampilkan status seluruh slot parkir (kosong / dibooking / terisi).
+- Memilih slot → request booking.
+- Menampilkan hasil booking + QR ticket.
+- Menyediakan tombol:
+  - Scan QR Masuk
+  - Scan QR Keluar
+- Menampilkan countdown masa booking.
+
+---
+
+## 4. Ticket / QR Page (Scan QR Masuk)
+**Fungsi:**
+- Mengakses kamera untuk scan QR.
+- Mengirim data QR ke backend untuk validasi.
+- Menampilkan hasil validasi (valid/tidak valid).
+- Indikator bahwa gerbang terbuka (jika valid).
+
+---
+
+## 5. Wallet Page (E-Wallet)
+**Fungsi:**
+- Menampilkan saldo pengguna.
+- Form input dan tombol top-up saldo.
+- Menampilkan notifikasi top-up berhasil.
+- (Opsional) Riwayat transaksi.
+
+---
+
+## 6. Admin Dashboard
+**Fungsi:**
+- Menampilkan status seluruh slot parkir secara real-time.
+- Ringkasan penggunaan harian (jumlah mobil masuk/keluar).
+- Tombol navigasi:
+  - Scan QR Admin
+  - Laporan Keuangan.
+
+---
+
+## 7. Admin Scan Page
+**Fungsi:**
+- Scan QR seperti user, tetapi dengan kemampuan override.
+- Menampilkan detail transaksi/booking berdasarkan QR.
+- Tombol manual membuka gerbang (untuk kondisi khusus).
+- Menampilkan status slot terkait.
+
+---
+
+## 8. Laporan Keuangan (Admin)
+**Fungsi:**
+- Menampilkan seluruh transaksi (parkir, denda, top-up, dsb).
+- Filter berdasarkan tanggal.
+- Perhitungan total pendapatan.
+- (Opsional) Export CSV/PDF.
+
+---
+
+# Ringkasan
+| Page | Fungsi Utama |
+|------|--------------|
+| Login | Verifikasi akun & masuk ke sistem |
+| Register | Membuat akun baru |
+| Map Kesediaan | Cek slot, booking, QR ticket |
+| Scan Ticket | Validasi QR untuk masuk |
+| Wallet | Saldo & top-up |
+| Admin Dashboard | Monitoring lahan & navigasi admin |
+| Admin Scan | Scan & override admin |
+| Laporan Keuangan | Rekap & total transaksi |
+
+---
+
+# Catatan
+- Paket 1: fokus UI lengkap + integrasi dasar.
+- Paket 2: auth system, logic integrasi penuh, pembayaran, laporan, override admin.
