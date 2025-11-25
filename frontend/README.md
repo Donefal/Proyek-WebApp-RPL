@@ -30,8 +30,8 @@ ref gpt https://chatgpt.com/s/t_691fbbdbbe4c8191943c4325af96020b
 
 UI figma https://www.figma.com/design/9frmEQL3vleBFF2hyxTNTm/Untitled?m=dev&t=7jvFiXfBvYlcRK0V-1
 
-# Paket 1 – Core Setup (paling penting dulu)
-- Berisi file dasar agar project langsung jalan:
+# ~~Paket 1 – Core Setup (paling penting dulu)~~
+Berisi file dasar agar project langsung jalan:
 - main.jsx
 - App.jsx
 - routes/AppRoutes.jsx
