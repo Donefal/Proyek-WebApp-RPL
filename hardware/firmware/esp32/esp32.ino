@@ -6,14 +6,14 @@
 // =======================
 // WiFi Credentials
 // =======================
-const char* ssid = "YOUR_WIFI";
-const char* password = "YOUR_PASSWORD";
+const char* ssid = "Az Zahra Living";
+const char* password = "cibiruhilir15";
 
 // =======================
 // API Endpoints
 // =======================
-String GET_URL = "http://127.0.0.1:8000/api/get";
-String POST_URL = "http://127.0.0.1:8000/api/update";
+String GET_URL = "http://10.34.222.209:8000/hw/get";
+String POST_URL = "http://10.34.222.209:8000/hw/update";
 
 // =======================
 // Ultrasonic Pins
@@ -24,9 +24,9 @@ struct Ultrasonic {
 };
 
 Ultrasonic sensors[3] = {
-  {4, 5},     // slot 1
-  {18, 19},   // slot 2
-  {21, 22}    // slot 3
+  {18, 19},   // slot 1
+  {16, 17},  // slot 2
+  {25, 26}   // slot 3 (35 is input-only → perfect)
 };
 
 bool occupied[3] = {false, false, false};
@@ -60,6 +60,8 @@ float measureDistance(int trig, int echo) {
   long duration = pulseIn(echo, HIGH, 30000);
   float distance = duration * 0.034 / 2;
 
+  Serial.print("Distance: ");
+  Serial.println(distance);
   if (duration == 0) return 999;  
   return distance;
 }
@@ -79,6 +81,8 @@ bool getFromAPI(JsonDocument &doc) {
   http.begin(GET_URL);
 
   int code = http.GET();
+  Serial.print("GET Response: ");
+  Serial.println(code);
   if (code != 200) {
     http.end();
     return false;
@@ -149,11 +153,12 @@ void setup() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
+    Serial.print("x");
     delay(500);
   }
 
   Serial.println("\nConnected!");
+  Serial.println(WiFi.localIP());
 }
 
 // =======================
@@ -164,7 +169,10 @@ void loop() {
   for (int i = 0; i < 3; i++) {
     float dist = measureDistance(sensors[i].trig, sensors[i].echo);
     occupied[i] = (dist < 10);
+    Serial.print(occupied[i]);
+    Serial.println();
   }
+  
 
   // 2. GET from API
   StaticJsonDocument<512> apiResponse;
