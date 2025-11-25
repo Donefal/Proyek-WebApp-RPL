@@ -24,7 +24,7 @@ def get_db():
 #   CUSTOMER CRUD
 # ==============================================================
 
-@app.post("/dbcustomer", response_model=schemas.Customer)
+@app.post("db/customer", response_model=schemas.Customer)
 def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
     new = models.Customer(**customer.dict())
     db.add(new)
@@ -33,12 +33,12 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
     return new
 
 
-@app.get("/dbcustomer", response_model=list[schemas.Customer])
+@app.get("db/customer", response_model=list[schemas.Customer])
 def get_customers(db: Session = Depends(get_db)):
     return db.query(models.Customer).all()
 
 
-@app.put("/dbcustomer/{id_customer}", response_model=schemas.Customer)
+@app.put("db/customer/{id_customer}", response_model=schemas.Customer)
 def update_customer(id_customer: int, data: schemas.CustomerCreate, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id_customer == id_customer).first()
     if not customer:
@@ -52,7 +52,7 @@ def update_customer(id_customer: int, data: schemas.CustomerCreate, db: Session 
     return customer
 
 
-@app.delete("/dbcustomer/{id_customer}")
+@app.delete("db/customer/{id_customer}")
 def delete_customer(id_customer: int, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id_customer == id_customer).first()
     if not customer:
@@ -67,7 +67,7 @@ def delete_customer(id_customer: int, db: Session = Depends(get_db)):
 #   ADMIN CRUD
 # ==============================================================
 
-@app.post("/dbadmin", response_model=schemas.Admin)
+@app.post("db/admin", response_model=schemas.Admin)
 def create_admin(admin: schemas.AdminCreate, db: Session = Depends(get_db)):
     new = models.Admin(**admin.dict())
     db.add(new)
@@ -76,12 +76,12 @@ def create_admin(admin: schemas.AdminCreate, db: Session = Depends(get_db)):
     return new
 
 
-@app.get("/dbadmin", response_model=list[schemas.Admin])
+@app.get("db/admin", response_model=list[schemas.Admin])
 def get_admin(db: Session = Depends(get_db)):
     return db.query(models.Admin).all()
 
 
-@app.put("/dbadmin/{id_admin}", response_model=schemas.Admin)
+@app.put("db/admin/{id_admin}", response_model=schemas.Admin)
 def update_admin(id_admin: int, data: schemas.AdminCreate, db: Session = Depends(get_db)):
     admin = db.query(models.Admin).filter(models.Admin.id_admin == id_admin).first()
     if not admin:
@@ -95,7 +95,7 @@ def update_admin(id_admin: int, data: schemas.AdminCreate, db: Session = Depends
     return admin
 
 
-@app.delete("/dbadmin/{id_admin}")
+@app.delete("db/admin/{id_admin}")
 def delete_admin(id_admin: int, db: Session = Depends(get_db)):
     admin = db.query(models.Admin).filter(models.Admin.id_admin == id_admin).first()
     if not admin:
@@ -110,7 +110,7 @@ def delete_admin(id_admin: int, db: Session = Depends(get_db)):
 #   MIKROKONTROLER CRUD
 # ==============================================================
 
-@app.post("/dbmikrokontroler", response_model=schemas.Mikrokontroler)
+@app.post("db/mikrokontroler", response_model=schemas.Mikrokontroler)
 def create_mikrokontroler(db: Session = Depends(get_db)):
     new = models.Mikrokontroler()
     db.add(new)
@@ -119,12 +119,12 @@ def create_mikrokontroler(db: Session = Depends(get_db)):
     return new
 
 
-@app.get("/dbmikrokontroler", response_model=list[schemas.Mikrokontroler])
+@app.get("db/mikrokontroler", response_model=list[schemas.Mikrokontroler])
 def get_mikrokontroler(db: Session = Depends(get_db)):
     return db.query(models.Mikrokontroler).all()
 
 
-@app.delete("/dbmikrokontroler/{id_mikrokontroler}")
+@app.delete("db/mikrokontroler/{id_mikrokontroler}")
 def delete_mikrokontroler(id_mikrokontroler: int, db: Session = Depends(get_db)):
     mc = db.query(models.Mikrokontroler).filter(models.Mikrokontroler.id_mikrokontroler == id_mikrokontroler).first()
     if not mc:
@@ -136,47 +136,69 @@ def delete_mikrokontroler(id_mikrokontroler: int, db: Session = Depends(get_db))
 
 
 # ==============================================================
-#   SENSOR CRUD
+#   SLOT CRUD
 # ==============================================================
 
-@app.post("/dbsensor", response_model=schemas.Sensor)
-def create_sensor(sensor: schemas.SensorCreate, db: Session = Depends(get_db)):
+@app.post("db/slot", response_model=schemas.Slot)
+def create_slot(slot: schemas.SlotCreate, db: Session = Depends(get_db)):
     # cek foreign key
     mc = db.query(models.Mikrokontroler).filter(
-        models.Mikrokontroler.id_mikrokontroler == sensor.id_mikrokontroler
+        models.Mikrokontroler.id_mikrokontroler == slot.id_mikrokontroler
     ).first()
 
     if not mc:
         raise HTTPException(404, "Mikrokontroler not found")
 
-    new = models.Sensor(**sensor.dict())
+    new = models.Slot(**slot.dict())
     db.add(new)
     db.commit()
     db.refresh(new)
     return new
 
 
-@app.get("/dbsensor", response_model=list[schemas.Sensor])
-def get_sensor(db: Session = Depends(get_db)):
-    return db.query(models.Sensor).all()
+@app.get("db/slot", response_model=list[schemas.Slot])
+def get_slot(db: Session = Depends(get_db)):
+    return db.query(models.Slot).all()
 
+@app.put("db/slot/{id_slot}", response_model=schemas.Slot)
+def update_slot(id_slot: int, data: schemas.SlotCreate, db: Session = Depends(get_db)):
+    slot = db.query(models.Slot).filter(models.Slot.id_slot == id_slot).first()
+    if not slot:
+        raise HTTPException(404, "Slot not found")
 
-@app.delete("/dbsensor/{id_sensor}")
-def delete_sensor(id_sensor: int, db: Session = Depends(get_db)):
-    sensor = db.query(models.Sensor).filter(models.Sensor.id_sensor == id_sensor).first()
-    if not sensor:
-        raise HTTPException(404, "Sensor not found")
+    # cek mikrokontroler jika ingin diupdate
+    mc = db.query(models.Mikrokontroler).filter(
+        models.Mikrokontroler.id_mikrokontroler == data.id_mikrokontroler
+    ).first()
 
-    db.delete(sensor)
+    if not mc:
+        raise HTTPException(404, "Mikrokontroler tidak ditemukan")
+
+    # update semua field
+    for key, value in data.dict().items():
+        setattr(slot, key, value)
+
     db.commit()
-    return {"message": "Sensor deleted successfully"}
+    db.refresh(slot)
+    return slot
+
+
+@app.delete("db/slot/{id_slot}")
+def delete_slot(id_slot: int, db: Session = Depends(get_db)):
+    slot = db.query(models.Slot).filter(models.Slot.id_slot == id_slot).first()
+    if not slot:
+        raise HTTPException(404, "Slot not found")
+
+    db.delete(slot)
+    db.commit()
+    return {"message": "Slot deleted successfully"}
 
 
 # ==============================================================
 #   AKTUATOR CRUD
 # ==============================================================
 
-@app.post("/dbaktuator", response_model=schemas.Aktuator)
+@app.post("db/aktuator", response_model=schemas.Aktuator)
 def create_aktuator(aktuator: schemas.AktuatorCreate, db: Session = Depends(get_db)):
     # cek foreign key
     mc = db.query(models.Mikrokontroler).filter(
@@ -193,12 +215,34 @@ def create_aktuator(aktuator: schemas.AktuatorCreate, db: Session = Depends(get_
     return new
 
 
-@app.get("/dbaktuator", response_model=list[schemas.Aktuator])
+@app.get("db/aktuator", response_model=list[schemas.Aktuator])
 def get_aktuator(db: Session = Depends(get_db)):
     return db.query(models.Aktuator).all()
 
+@app.put("db/aktuator/{id_aktuator}", response_model=schemas.Aktuator)
+def update_aktuator(id_aktuator: int, data: schemas.AktuatorCreate, db: Session = Depends(get_db)):
+    aktuator = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == id_aktuator).first()
+    if not aktuator:
+        raise HTTPException(404, "Aktuator not found")
 
-@app.delete("/dbaktuator/{id_aktuator}")
+    # cek FK mikrokontroler
+    mc = db.query(models.Mikrokontroler).filter(
+        models.Mikrokontroler.id_mikrokontroler == data.id_mikrokontroler
+    ).first()
+
+    if not mc:
+        raise HTTPException(404, "Mikrokontroler tidak ditemukan")
+
+    # update data
+    for key, value in data.dict().items():
+        setattr(aktuator, key, value)
+
+    db.commit()
+    db.refresh(aktuator)
+    return aktuator
+
+
+@app.delete("db/aktuator/{id_aktuator}")
 def delete_aktuator(id_aktuator: int, db: Session = Depends(get_db)):
     akt = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == id_aktuator).first()
     if not akt:
@@ -208,11 +252,15 @@ def delete_aktuator(id_aktuator: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Aktuator deleted successfully"}
 
-@app.get("/dbbooking", response_model=list[schemas.Booking])
+# ==============================================================
+#   BOOKING CRUD
+# ==============================================================
+
+@app.get("db/booking", response_model=list[schemas.Booking])
 def get_booking(db: Session = Depends(get_db)):
     return db.query(models.Booking).all()
 
-@app.post("/dbbooking", response_model=schemas.Booking)
+@app.post("db/booking", response_model=schemas.Booking)
 def create_booking(data: schemas.BookingCreate, db: Session = Depends(get_db)):
     # cek foreign key parkir
     parkir = db.query(models.Mikrokontroler).filter(
@@ -234,7 +282,7 @@ def create_booking(data: schemas.BookingCreate, db: Session = Depends(get_db)):
     db.refresh(booking)
     return booking
 
-@app.put("/dbbooking/{id_booking}", response_model=schemas.Booking)
+@app.put("db/booking/{id_booking}", response_model=schemas.Booking)
 def update_booking(id_booking: int, data: schemas.BookingUpdate, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(
         models.Booking.id_booking == id_booking
@@ -269,7 +317,7 @@ def update_booking(id_booking: int, data: schemas.BookingUpdate, db: Session = D
     db.refresh(booking)
     return booking
 
-@app.delete("/dbbooking/{id_booking}")
+@app.delete("db/booking/{id_booking}")
 def delete_booking(id_booking: int, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(
         models.Booking.id_booking == id_booking

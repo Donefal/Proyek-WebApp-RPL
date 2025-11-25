@@ -47,21 +47,23 @@ class Admin(AdminBase):
 
 
 # ======================================================
-# SENSOR
+# SLOT
 # ======================================================
 
-class SensorBase(BaseModel):
+class SlotBase(BaseModel):
     id_mikrokontroler: int
 
 
-class SensorCreate(SensorBase):
+class SlotCreate(SlotBase):
     pass
 
 
-class Sensor(BaseModel):
-    id_sensor: int
-    id_mikrokontroler: int
-
+class Slot(BaseModel):
+    id_slot: int
+    booked: bool
+    confirmed: bool
+    calculated: bool
+    occupied: bool
     class Config:
         orm_mode = True
 
@@ -80,7 +82,8 @@ class AktuatorCreate(AktuatorBase):
 
 class Aktuator(BaseModel):
     id_aktuator: int
-    id_mikrokontroler: int
+    nama_aktuator: bool
+    kondisi: bool
 
     class Config:
         orm_mode = True
@@ -122,12 +125,12 @@ class BookingUpdate(BaseModel):
 
     class Config:
         orm_mode = True
-# ------ Nested (include sensors & actuators) ------
+# ------ Nested (include slot & actuators) ------
 class Mikrokontroler(BaseModel):
     id_mikrokontroler: int
 
     # relasi (opsional)
-    sensor: Optional[List[Sensor]] = []
+    slot: Optional[List[Slot]] = []
     aktuator: Optional[List[Aktuator]] = []
 
     class Config:
