@@ -24,7 +24,7 @@ def get_db():
 #   CUSTOMER CRUD
 # ==============================================================
 
-@app.post("/customer", response_model=schemas.Customer)
+@app.post("/dbcustomer", response_model=schemas.Customer)
 def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
     new = models.Customer(**customer.dict())
     db.add(new)
@@ -33,12 +33,12 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
     return new
 
 
-@app.get("/customer", response_model=list[schemas.Customer])
+@app.get("/dbcustomer", response_model=list[schemas.Customer])
 def get_customers(db: Session = Depends(get_db)):
     return db.query(models.Customer).all()
 
 
-@app.put("/customer/{id_customer}", response_model=schemas.Customer)
+@app.put("/dbcustomer/{id_customer}", response_model=schemas.Customer)
 def update_customer(id_customer: int, data: schemas.CustomerCreate, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id_customer == id_customer).first()
     if not customer:
@@ -52,7 +52,7 @@ def update_customer(id_customer: int, data: schemas.CustomerCreate, db: Session 
     return customer
 
 
-@app.delete("/customer/{id_customer}")
+@app.delete("/dbcustomer/{id_customer}")
 def delete_customer(id_customer: int, db: Session = Depends(get_db)):
     customer = db.query(models.Customer).filter(models.Customer.id_customer == id_customer).first()
     if not customer:
@@ -67,7 +67,7 @@ def delete_customer(id_customer: int, db: Session = Depends(get_db)):
 #   ADMIN CRUD
 # ==============================================================
 
-@app.post("/admin", response_model=schemas.Admin)
+@app.post("/dbadmin", response_model=schemas.Admin)
 def create_admin(admin: schemas.AdminCreate, db: Session = Depends(get_db)):
     new = models.Admin(**admin.dict())
     db.add(new)
@@ -76,12 +76,12 @@ def create_admin(admin: schemas.AdminCreate, db: Session = Depends(get_db)):
     return new
 
 
-@app.get("/admin", response_model=list[schemas.Admin])
+@app.get("/dbadmin", response_model=list[schemas.Admin])
 def get_admin(db: Session = Depends(get_db)):
     return db.query(models.Admin).all()
 
 
-@app.put("/admin/{id_admin}", response_model=schemas.Admin)
+@app.put("/dbadmin/{id_admin}", response_model=schemas.Admin)
 def update_admin(id_admin: int, data: schemas.AdminCreate, db: Session = Depends(get_db)):
     admin = db.query(models.Admin).filter(models.Admin.id_admin == id_admin).first()
     if not admin:
@@ -95,7 +95,7 @@ def update_admin(id_admin: int, data: schemas.AdminCreate, db: Session = Depends
     return admin
 
 
-@app.delete("/admin/{id_admin}")
+@app.delete("/dbadmin/{id_admin}")
 def delete_admin(id_admin: int, db: Session = Depends(get_db)):
     admin = db.query(models.Admin).filter(models.Admin.id_admin == id_admin).first()
     if not admin:
@@ -110,7 +110,7 @@ def delete_admin(id_admin: int, db: Session = Depends(get_db)):
 #   MIKROKONTROLER CRUD
 # ==============================================================
 
-@app.post("/mikrokontroler", response_model=schemas.Mikrokontroler)
+@app.post("/dbmikrokontroler", response_model=schemas.Mikrokontroler)
 def create_mikrokontroler(db: Session = Depends(get_db)):
     new = models.Mikrokontroler()
     db.add(new)
@@ -119,12 +119,12 @@ def create_mikrokontroler(db: Session = Depends(get_db)):
     return new
 
 
-@app.get("/mikrokontroler", response_model=list[schemas.Mikrokontroler])
+@app.get("/dbmikrokontroler", response_model=list[schemas.Mikrokontroler])
 def get_mikrokontroler(db: Session = Depends(get_db)):
     return db.query(models.Mikrokontroler).all()
 
 
-@app.delete("/mikrokontroler/{id_mikrokontroler}")
+@app.delete("/dbmikrokontroler/{id_mikrokontroler}")
 def delete_mikrokontroler(id_mikrokontroler: int, db: Session = Depends(get_db)):
     mc = db.query(models.Mikrokontroler).filter(models.Mikrokontroler.id_mikrokontroler == id_mikrokontroler).first()
     if not mc:
@@ -139,7 +139,7 @@ def delete_mikrokontroler(id_mikrokontroler: int, db: Session = Depends(get_db))
 #   SENSOR CRUD
 # ==============================================================
 
-@app.post("/sensor", response_model=schemas.Sensor)
+@app.post("/dbsensor", response_model=schemas.Sensor)
 def create_sensor(sensor: schemas.SensorCreate, db: Session = Depends(get_db)):
     # cek foreign key
     mc = db.query(models.Mikrokontroler).filter(
@@ -156,12 +156,12 @@ def create_sensor(sensor: schemas.SensorCreate, db: Session = Depends(get_db)):
     return new
 
 
-@app.get("/sensor", response_model=list[schemas.Sensor])
+@app.get("/dbsensor", response_model=list[schemas.Sensor])
 def get_sensor(db: Session = Depends(get_db)):
     return db.query(models.Sensor).all()
 
 
-@app.delete("/sensor/{id_sensor}")
+@app.delete("/dbsensor/{id_sensor}")
 def delete_sensor(id_sensor: int, db: Session = Depends(get_db)):
     sensor = db.query(models.Sensor).filter(models.Sensor.id_sensor == id_sensor).first()
     if not sensor:
@@ -176,7 +176,7 @@ def delete_sensor(id_sensor: int, db: Session = Depends(get_db)):
 #   AKTUATOR CRUD
 # ==============================================================
 
-@app.post("/aktuator", response_model=schemas.Aktuator)
+@app.post("/dbaktuator", response_model=schemas.Aktuator)
 def create_aktuator(aktuator: schemas.AktuatorCreate, db: Session = Depends(get_db)):
     # cek foreign key
     mc = db.query(models.Mikrokontroler).filter(
@@ -193,12 +193,12 @@ def create_aktuator(aktuator: schemas.AktuatorCreate, db: Session = Depends(get_
     return new
 
 
-@app.get("/aktuator", response_model=list[schemas.Aktuator])
+@app.get("/dbaktuator", response_model=list[schemas.Aktuator])
 def get_aktuator(db: Session = Depends(get_db)):
     return db.query(models.Aktuator).all()
 
 
-@app.delete("/aktuator/{id_aktuator}")
+@app.delete("/dbaktuator/{id_aktuator}")
 def delete_aktuator(id_aktuator: int, db: Session = Depends(get_db)):
     akt = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == id_aktuator).first()
     if not akt:
@@ -208,11 +208,11 @@ def delete_aktuator(id_aktuator: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Aktuator deleted successfully"}
 
-@app.get("/booking", response_model=list[schemas.Booking])
+@app.get("/dbbooking", response_model=list[schemas.Booking])
 def get_booking(db: Session = Depends(get_db)):
     return db.query(models.Booking).all()
 
-@app.post("/booking", response_model=schemas.Booking)
+@app.post("/dbbooking", response_model=schemas.Booking)
 def create_booking(data: schemas.BookingCreate, db: Session = Depends(get_db)):
     # cek foreign key parkir
     parkir = db.query(models.Mikrokontroler).filter(
@@ -234,7 +234,7 @@ def create_booking(data: schemas.BookingCreate, db: Session = Depends(get_db)):
     db.refresh(booking)
     return booking
 
-@app.put("/booking/{id_booking}", response_model=schemas.Booking)
+@app.put("/dbbooking/{id_booking}", response_model=schemas.Booking)
 def update_booking(id_booking: int, data: schemas.BookingUpdate, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(
         models.Booking.id_booking == id_booking
@@ -269,7 +269,7 @@ def update_booking(id_booking: int, data: schemas.BookingUpdate, db: Session = D
     db.refresh(booking)
     return booking
 
-@app.delete("/booking/{id_booking}")
+@app.delete("/dbbooking/{id_booking}")
 def delete_booking(id_booking: int, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(
         models.Booking.id_booking == id_booking
