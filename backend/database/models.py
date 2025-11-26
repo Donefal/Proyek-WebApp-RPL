@@ -13,7 +13,7 @@ class Customer(Base):
     id_customer = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
     email = Column(String(100), unique=True)
-    notelp = Column(Integer)      # penting! nomer hp pakai String
+    notelp = Column(String (16))     
     saldo = Column(Integer)
 
 
@@ -71,7 +71,7 @@ class Admin(Base):
     id_admin = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
     email = Column(String(100), unique=True)
-    notelp = Column(Integer)
+    notelp = Column(String(16))
 
 # ==========================
 # BOOKING TABLE

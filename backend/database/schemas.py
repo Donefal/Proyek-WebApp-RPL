@@ -10,7 +10,7 @@ from typing import Optional, List
 class CustomerBase(BaseModel):
     username: str
     email: str
-    notelp: int
+    notelp: str
     saldo: Optional[int] = 0
 
 
@@ -32,7 +32,7 @@ class Customer(CustomerBase):
 class AdminBase(BaseModel):
     username: str
     email: str
-    notelp: int
+    notelp: str
 
 
 class AdminCreate(AdminBase):
