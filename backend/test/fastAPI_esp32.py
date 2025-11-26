@@ -1,4 +1,9 @@
 # Run: fastapi dev fastAPI_esp32:app --host 0.0.0.0 --port 8000
+""" 
+TODO: 
+    Coba dari .post datanya diteruskan kembali ke @app.post ke endpoint db
+    Nah dari situ coba di format dulu supaya sesuai sama databasenya.
+"""
 
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
