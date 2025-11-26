@@ -7,7 +7,7 @@ Aplikasi yang akan dibuat bernama Parkingly yang memungkinkan pengguna untuk mel
 ### Links
 - 🔵 [Diagram Perancangan dkk](https://docs.google.com/document/d/1ssZJYY3XQVtuNRE1M58j9wiIHCUNradvOZLnqWeol6w/edit?usp=sharing)
 - 🔵 [Drive dokumen](https://drive.google.com/drive/folders/1cyqF4U8dpLJOzde2isi9cRhaTVICb4Hb?usp=sharing )
-- 🔵 Link desain: {...}
+- 🔵 [Link desain](https://www.figma.com/design/9frmEQL3vleBFF2hyxTNTm/Untitled?node-id=0-1&p=f&t=wYm7AqpiYEdpHEU2-0)
 - 🔵 [Link pengumpulan monitoring RPL](https://forms.gle/kZs1g5QCwCTRw1pGA)
 - 🔵 [Skematik WokWi](https://wokwi.com/projects/448224765608390657)
 
