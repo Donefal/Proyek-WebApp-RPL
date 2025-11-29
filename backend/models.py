@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
-from database import Base
+from backend.database import Base
 
 
 # ================================
@@ -39,7 +39,6 @@ class Slot(Base):
     id_slot = Column(Integer, primary_key=True, index=True)
     booked = Column(Boolean)
     confirmed = Column(Boolean)
-    calculated = Column(Boolean)
     occupied = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))

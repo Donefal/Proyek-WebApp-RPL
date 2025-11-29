@@ -62,7 +62,6 @@ class Slot(BaseModel):
     id_slot: int
     booked: bool
     confirmed: bool
-    calculated: bool
     occupied: bool
     class Config:
         orm_mode = True
