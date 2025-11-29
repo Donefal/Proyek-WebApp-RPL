@@ -37,9 +37,10 @@ class Slot(Base):
     __tablename__ = "slot_condition"
 
     id_slot = Column(Integer, primary_key=True, index=True)
-    booked = Column(Boolean)
-    confirmed = Column(Boolean)
-    occupied = Column(Boolean)
+    booked = Column(Boolean) # Slot di booking
+    confirmed = Column(Boolean) # Slot sdh dikonfirmasi (true bila sudah scan)
+    occupied = Column(Boolean) # Slot sedang ada mobilnya
+    alarmed = Column(Boolean) # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
@@ -54,7 +55,7 @@ class Aktuator(Base):
 
     id_aktuator = Column(Integer, primary_key=True, index=True)
     nama_aktuator = Column(String(100))
-    kondisi = Column(Boolean)
+    usable = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 

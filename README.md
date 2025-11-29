@@ -15,3 +15,8 @@ Aplikasi yang akan dibuat bernama Parkingly yang memungkinkan pengguna untuk mel
 - 🟢 HTML/CSS/JavaScript
 - 🟡 Laragon + Python: MySQL + FastAPI
 - 🔴 C++ 
+
+## Running The WebApp
+- Backend: [README on Backend](backend\README.md)
+- Frontend: [README on Frontend](frontend\README.md)
+- Hardware: [README on Hardware](readme\README.md)

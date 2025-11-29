@@ -1,3 +1,9 @@
+/*
+  TODO: ROMBAK
+  1. Ultrasonic diubah menjadi 2 aja
+  2. Implementasi send_instruction_to_esp32_test() dari hardware.py
+*/
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
@@ -11,6 +17,7 @@ const char* password = "cibiruhilir15";
 
 // =======================
 // API Endpoints
+// TODO: Endpoint disesuaikan dengan hardware.py
 // =======================
 String GET_URL = "http://10.34.222.209:8000/hw/get";
 String POST_URL = "http://10.34.222.209:8000/hw/update";
@@ -73,6 +80,7 @@ void alert(int slot) {
 
 // =======================
 // API: GET
+// TODO: Data type sesuaiin dengan send_instruction_esp32() di hardware.py
 // =======================
 bool getFromAPI(JsonDocument &doc) {
   if (WiFi.status() != WL_CONNECTED) return false;
@@ -96,6 +104,7 @@ bool getFromAPI(JsonDocument &doc) {
 
 // =======================
 // API: POST
+// TODO: Data type sesuaiin dengan update_from_esp32() di hardware.py
 // =======================
 void sendToAPI() {
   if (WiFi.status() != WL_CONNECTED) return;
