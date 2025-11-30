@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
-import models, schemas
+import backend.models as models, backend.schemas as schemas
 
 router = APIRouter()
 
