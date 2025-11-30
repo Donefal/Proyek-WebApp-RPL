@@ -157,7 +157,7 @@ class SlotData(BaseModel):
     confirmed: bool
 
 class GateData(BaseModel):
-    nama_aktuator: str
+    id_aktuator: int
     buka: bool
     
 class ToESP32(BaseModel):

@@ -1,7 +1,6 @@
 /*
   TODO: ROMBAK
-  1. Ultrasonic diubah menjadi 2 aja
-  2. Implementasi send_instruction_to_esp32_test() dari hardware.py
+  1. Implementasi send_instruction_to_esp32_test() dari hardware.py
 */
 
 #include <WiFi.h>
@@ -17,41 +16,54 @@ const char* password = "cibiruhilir15";
 
 // =======================
 // API Endpoints
-// TODO: Endpoint disesuaikan dengan hardware.py
+// TODO: Apakah ada cara agar IP endpoint tidak hardcoded
 // =======================
-String GET_URL = "http://10.34.222.209:8000/hw/get";
+String GET_URL = "http://10.34.222.209:8000/hw/instruction";
 String POST_URL = "http://10.34.222.209:8000/hw/update";
 
 // =======================
-// Ultrasonic Pins
+// Struct Declaration
 // =======================
 struct Ultrasonic {
   int trig;
   int echo;
 };
 
-Ultrasonic sensors[3] = {
+struct Buzzer {
+  int pin;
+}
+
+// =======================
+// Constants
+// =======================
+const int AMOUNT_OF_SLOTS = 2;
+
+// TODO: Need to be hardcoded
+const Ultrasonic SENSOR_PINS[AMOUNT_OF_SLOTS] = {
   {18, 19},   // slot 1
-  {16, 17},  // slot 2
-  {25, 26}   // slot 3 (35 is input-only → perfect)
+  {16, 17}  // slot 2
 };
 
-bool occupied[3] = {false, false, false};
-bool calculated[3] = {false, false, false};
-
-// =======================
 // Servos
-// =======================
 Servo enterGate;
 Servo exitGate;
+const int ENTER_GATE_PIN = 13;
+const int EXIT_GATE_PIN = 14;
 
-int ENTER_GATE_PIN = 13;
-int EXIT_GATE_PIN = 14;
+// Buzzers
+const Buzzer BUZZER_PIN[AMOUNT_OF_SLOTS] = {
+  27, // slot 1
+  28 // slot 2
+}
 
 // =======================
-// Buzzer
+// Main Variable
 // =======================
-int BUZZER_PIN = 27;
+bool occupied[AMOUNT_OF_SLOTS];
+for (int i = 0; i < AMOUNT_OF_SLOTS; i++){ occupied[i] = false; }
+
+bool alarmed[AMOUNT_OF_SLOTS];
+for (int i = 0; i < AMOUNT_OF_SLOTS; i++){ alarmed[i] = false; }
 
 // =======================
 // Helper Functions
@@ -78,9 +90,17 @@ void alert(int slot) {
   delay(50);
 }
 
+bool isNeedToAlarm(int i, bool booked, bool confirmed) {
+  if(!booked && occupied[i]) { return true; }
+  if(booked && !confirmed && occupied[i]) { return true; }
+  
+  if(booked && confirmed && occupied[i]) { return false; }
+  if(!occupied[i]) { return false; }
+  else { return false; }
+}
+
 // =======================
 // API: GET
-// TODO: Data type sesuaiin dengan send_instruction_esp32() di hardware.py
 // =======================
 bool getFromAPI(JsonDocument &doc) {
   if (WiFi.status() != WL_CONNECTED) return false;
@@ -104,19 +124,18 @@ bool getFromAPI(JsonDocument &doc) {
 
 // =======================
 // API: POST
-// TODO: Data type sesuaiin dengan update_from_esp32() di hardware.py
 // =======================
 void sendToAPI() {
   if (WiFi.status() != WL_CONNECTED) return;
 
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<512> doc;
   JsonArray arr = doc.createNestedArray("slots");
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
     JsonObject slot = arr.createNestedObject();
-    slot["no"] = i + 1;
+    slot["id_slot"] = i + 1; // TODO: Ini harus rada di di cek juga bisi seg fault
     slot["occupied"] = occupied[i];
-    slot["calculated"] = calculated[i];
+    slot["alarmed"] = alarmed[i];
   }
 
   String json;
@@ -151,8 +170,8 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
 
   for (int i = 0; i < 3; i++) {
-    pinMode(sensors[i].trig, OUTPUT);
-    pinMode(sensors[i].echo, INPUT);
+    pinMode(SENSOR_PINS[i].trig, OUTPUT);
+    pinMode(SENSOR_PINS[i].echo, INPUT);
   }
 
   enterGate.attach(ENTER_GATE_PIN);
@@ -162,7 +181,7 @@ void setup() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print("x");
+    Serial.print(".");
     delay(500);
   }
 
@@ -175,12 +194,13 @@ void setup() {
 // =======================
 void loop() {
   // 1. Read Ultrasonic
-  for (int i = 0; i < 3; i++) {
-    float dist = measureDistance(sensors[i].trig, sensors[i].echo);
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
+    float dist = measureDistance(SENSOR_PINS[i].trig, SENSOR_PINS[i].echo);
     occupied[i] = (dist < 10);
     Serial.print(occupied[i]);
-    Serial.println();
+    Serial.print(" ");
   }
+  Serial.println();
   
 
   // 2. GET from API
@@ -188,25 +208,36 @@ void loop() {
   bool ok = getFromAPI(apiResponse);
 
   if (ok) {
-    JsonArray slots = apiResponse["slots"];
-    JsonObject gate = apiResponse["gate"];
+    JsonArray slots = apiResponse["slots"].as<JsonArray>();
+    JsonArray gates = apiResponse["gates"].as<JsonArray>();
 
     // --- Slot Warning Logic ---
-    for (int i = 0; i < 3; i++) {
-      bool booked = slots[i]["booked"];
-      bool confirmed = slots[i]["confirmed"];
-      bool calc = slots[i]["calculated"];
+    for(JsonObject slot : slots) {
+      int id_slot = slot["id_slot"];
+      bool booked = slot["booked"];
+      bool confirmed = slot["confirmed"];
 
-      if (!calc) {
-        if (occupied[i] && !confirmed) alert(i);
-        if (occupied[i] && !booked) alert(i);
-        if (occupied[i] && booked && confirmed) calculated[i] = true;
+      int i = id_slot - 1; // TODO: Ini mesti di cek lagi id_slot valuenya dari brp (bising seg fault)
+      alarmed[i] = isNeedToAlarm(i, booked, confirmed);
+      if(alarmed[i]) { 
+        alert(i) 
       }
     }
 
-    // --- Gate Logic ---
-    if (gate["enterShouldOpen"]) openGate(enterGate);
-    if (gate["exitShouldOpen"]) openGate(exitGate);
+    // --- Gate Logic --- use openGate()
+    for(JsonObject gate : gates) {
+      int id_aktuator = gate["id_aktuator"];
+      bool buka = gate["buka"];
+
+      if(buka) {
+        if(id_aktuator == 0) { openGate(enterGate); }
+        else if (id_aktuator == 1) { openGate(exitGate);  }
+        else { 
+          Serial.print("Gate is not valid! Actuator ID: "); 
+          Serial.println(id_aktuator);
+        }
+      }
+    }
   }
 
   // 3. POST to API
