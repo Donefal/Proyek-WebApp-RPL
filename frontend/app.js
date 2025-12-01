@@ -5,6 +5,13 @@ const PRICING = {
   extraHour: 5000,
 };
 
+// Hanya izinkan slot nomor 1 dan 2 untuk bisa dibooking
+function isBookableSpot(spot) {
+  if (!spot || !spot.code) return false;
+  const numeric = parseInt(String(spot.code).replace(/\D/g, ""), 10);
+  return numeric === 1 || numeric === 2;
+}
+
 const state = {
   token: null,
   user: null,
@@ -170,10 +177,13 @@ function renderParkingGrid(list) {
     const bNum = parseInt(b.code.replace(/\D/g, '')) || 0;
     return aNum - bNum;
   });
-  
+
   sortedSpots.forEach((spot) => {
+    const bookable = isBookableSpot(spot);
+    const isAvailableForUser = spot.isAvailable && bookable;
+
     const slot = document.createElement("div");
-    slot.className = `parking-slot ${spot.isAvailable ? "available" : "occupied"}`;
+    slot.className = `parking-slot ${isAvailableForUser ? "available" : "occupied"}`;
     slot.dataset.id = spot.id;
     slot.dataset.code = spot.code;
     
@@ -186,7 +196,8 @@ function renderParkingGrid(list) {
       <div class="parking-slot-name">${spot.name}</div>
     `;
     
-    if (spot.isAvailable) {
+    // Hanya slot 1 dan 2 yang bisa dipilih pengguna
+    if (isAvailableForUser) {
       slot.addEventListener("click", () => setSelectedSpot(spot));
     }
     
@@ -272,12 +283,14 @@ function renderSpots(list, targetList, includeMeta = true) {
       return;
     }
     const li = document.createElement("li");
-    li.className = `spot-card ${spot.isAvailable ? "available" : "occupied"}`;
+    const bookable = isBookableSpot(spot);
+    const isAvailableForUser = spot.isAvailable && bookable;
+    li.className = `spot-card ${isAvailableForUser ? "available" : "occupied"}`;
     li.dataset.id = spot.id;
     li.innerHTML = `
       <div class="spot-title">
         <strong>${spot.name} (${spot.code})</strong>
-        <span class="chip">${spot.isAvailable ? "Tersedia" : "Dipakai"}</span>
+        <span class="chip">${isAvailableForUser ? "Tersedia" : "Dipakai"}</span>
       </div>
       <div class="meta">
         Level ${spot.level} • Rp10.000 (1 jam pertama) • Rp5.000/jam berikutnya
@@ -286,7 +299,8 @@ function renderSpots(list, targetList, includeMeta = true) {
     if (state.selectedSpot?.id === spot.id) {
       li.classList.add("selected");
     }
-    if (spot.isAvailable) {
+    // Hanya slot 1 dan 2 yang bisa dipilih pengguna
+    if (isAvailableForUser) {
       li.addEventListener("click", () => setSelectedSpot(spot));
     }
     targetList.appendChild(li);
@@ -308,7 +322,8 @@ function filterSpots(spots) {
 function setHeroSlots(spots) {
   if (!elements.heroSlots) return;
   const list = Array.isArray(spots) ? spots : [];
-  const available = list.filter((spot) => spot.isAvailable).length;
+  // Hanya hitung slot yang benar-benar bisa dibooking (nomor 1 dan 2)
+  const available = list.filter((spot) => spot.isAvailable && isBookableSpot(spot)).length;
   elements.heroSlots.textContent = available;
 }
 
@@ -566,7 +581,12 @@ async function loadSpots() {
     const filtered = filterSpots(spots);
     renderSpots(filtered, elements.spotList);
     const validSelection = state.selectedSpot
-      ? spots.find((spot) => spot.id === state.selectedSpot.id && spot.isAvailable)
+      ? spots.find(
+          (spot) =>
+            spot.id === state.selectedSpot.id &&
+            spot.isAvailable &&
+            isBookableSpot(spot),
+        )
       : null;
     setSelectedSpot(validSelection || null);
     setHeroSlots(spots);
@@ -657,6 +677,10 @@ if (elements.goToBooking) {
       alert("Silakan pilih slot parkir terlebih dahulu.");
       return;
     }
+    if (!isBookableSpot(state.selectedSpot)) {
+      alert("Slot yang dipilih tidak tersedia untuk booking. Hanya slot 1 dan 2 yang dapat dibooking.");
+      return;
+    }
     sessionStorage.setItem("selectedSpot", JSON.stringify(state.selectedSpot));
     window.location.href = "booking.html";
   });
@@ -666,6 +690,10 @@ if (elements.goToBookingSelected) {
   elements.goToBookingSelected.addEventListener("click", () => {
     if (!state.selectedSpot) {
       alert("Silakan pilih slot parkir terlebih dahulu.");
+      return;
+    }
+    if (!isBookableSpot(state.selectedSpot)) {
+      alert("Slot yang dipilih tidak tersedia untuk booking. Hanya slot 1 dan 2 yang dapat dibooking.");
       return;
     }
     sessionStorage.setItem("selectedSpot", JSON.stringify(state.selectedSpot));

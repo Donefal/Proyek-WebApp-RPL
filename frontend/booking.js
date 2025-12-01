@@ -2,6 +2,13 @@
 const API_BASE_URL = "http://localhost:5001/api";
 const STORAGE_KEY = "smartParkingSession";
 
+// Hanya izinkan slot nomor 1 dan 2 untuk bisa dibooking
+function isBookableSpot(spot) {
+  if (!spot || !spot.code) return false;
+  const numeric = parseInt(String(spot.code).replace(/\D/g, ""), 10);
+  return numeric === 1 || numeric === 2;
+}
+
 const bookingState = {
   token: null,
   user: null,
@@ -114,6 +121,13 @@ function loadSelectedSpot() {
   if (selectedSpotData) {
     try {
       const spot = JSON.parse(selectedSpotData);
+      // Cegah akses booking untuk slot selain nomor 1 dan 2
+      if (!isBookableSpot(spot)) {
+        alert("Slot yang dipilih tidak tersedia untuk booking. Hanya slot 1 dan 2 yang dapat dibooking.");
+        sessionStorage.removeItem("selectedSpot");
+        window.location.href = "index.html";
+        return;
+      }
       bookingState.selectedSpot = spot;
       updateSelectedSpotDisplay(spot);
     } catch (err) {
@@ -298,6 +312,10 @@ if (bookingElements.bookingForm) {
     event.preventDefault();
     if (!bookingState.selectedSpot) {
       alert("Silakan pilih slot parkir terlebih dahulu.");
+      return;
+    }
+    if (!isBookableSpot(bookingState.selectedSpot)) {
+      alert("Slot yang dipilih tidak tersedia untuk booking. Hanya slot 1 dan 2 yang dapat dibooking.");
       return;
     }
     const payload = {
