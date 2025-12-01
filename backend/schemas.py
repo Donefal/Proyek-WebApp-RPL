@@ -55,15 +55,20 @@ class SlotBase(BaseModel):
 
 
 class SlotCreate(SlotBase):
-    pass
+    # optional flags for initial state — default to False if omitted by client
+    booked: bool = False
+    confirmed: bool = False
+    occupied: bool = False
+    alarmed: bool = False
 
 
 class Slot(BaseModel):
     id_slot: int
-    booked: bool
-    confirmed: bool
-    calculated: bool
-    occupied: bool
+    booked: bool = False # Slot di booking
+    confirmed: bool = False # Slot sdh dikonfirmasi (true bila sudah scan)
+    occupied: bool = False # Slot sedang ada mobilnya
+    alarmed: bool = False # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
+
     class Config:
         orm_mode = True
 
@@ -82,8 +87,8 @@ class AktuatorCreate(AktuatorBase):
 
 class Aktuator(BaseModel):
     id_aktuator: int
-    nama_aktuator: bool
-    kondisi: bool
+    nama_aktuator: str
+    usable: bool
 
     class Config:
         orm_mode = True
@@ -135,3 +140,31 @@ class Mikrokontroler(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+# ======================================================
+# ESP32 HARDWARE DATA
+# ======================================================
+
+# ESP32 -> API -------------------------------
+class SlotDetection(BaseModel):
+    id_slot: int
+    occupied: bool # Slot sedang ada mobilnya
+    alarmed: bool # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
+
+class FromESP32(BaseModel):
+    slots: list[SlotDetection]
+
+# API -> ESP32 -------------------------------
+class SlotData(BaseModel):
+    id_slot: int
+    booked: bool
+    confirmed: bool
+
+class GateData(BaseModel):
+    id_aktuator: int
+    buka: bool
+    
+class ToESP32(BaseModel):
+    slots: list[SlotData]
+    gates: list[GateData]

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
-from database import Base
+from backend.database import Base
 
 
 # ================================
@@ -37,10 +37,10 @@ class Slot(Base):
     __tablename__ = "slot_condition"
 
     id_slot = Column(Integer, primary_key=True, index=True)
-    booked = Column(Boolean)
-    confirmed = Column(Boolean)
-    calculated = Column(Boolean)
-    occupied = Column(Boolean)
+    booked = Column(Boolean, default=False, nullable=False) # Slot di booking
+    confirmed = Column(Boolean, default=False, nullable=False) # Slot sdh dikonfirmasi (true bila sudah scan)
+    occupied = Column(Boolean, default=False, nullable=False) # Slot sedang ada mobilnya
+    alarmed = Column(Boolean, default=False, nullable=False) # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
@@ -55,7 +55,7 @@ class Aktuator(Base):
 
     id_aktuator = Column(Integer, primary_key=True, index=True)
     nama_aktuator = Column(String(100))
-    kondisi = Column(Boolean)
+    usable = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 

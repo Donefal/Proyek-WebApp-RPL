@@ -6,48 +6,58 @@
 // =======================
 // WiFi Credentials
 // =======================
-const char* ssid = "Az Zahra Living";
-const char* password = "cibiruhilir15";
+const char* ssid = "realme 8i";
+const char* password = "avinavin";
 
 // =======================
 // API Endpoints
 // =======================
-String GET_URL = "http://10.34.222.209:8000/hw/get";
-String POST_URL = "http://10.34.222.209:8000/hw/update";
+String GET_URL = "http://172.17.87.209:8000/hw/instruction";
+String POST_URL = "http://172.17.87.209:8000/hw/update";
 
 // =======================
-// Ultrasonic Pins
+// Structs
 // =======================
 struct Ultrasonic {
   int trig;
   int echo;
 };
 
-Ultrasonic sensors[3] = {
-  {18, 19},   // slot 1
-  {16, 17},  // slot 2
-  {25, 26}   // slot 3 (35 is input-only → perfect)
+struct Buzzer {
+  int pin;
 };
 
-bool occupied[3] = {false, false, false};
-bool calculated[3] = {false, false, false};
+// =======================
+// Constants
+// =======================
+const int AMOUNT_OF_SLOTS = 2;
 
-// =======================
+const Ultrasonic SENSOR_PINS[AMOUNT_OF_SLOTS] = {
+  {18, 19},
+  {16, 17}
+};
+
 // Servos
-// =======================
 Servo enterGate;
 Servo exitGate;
 
-int ENTER_GATE_PIN = 13;
-int EXIT_GATE_PIN = 14;
+const int ENTER_GATE_PIN = 13;
+const int EXIT_GATE_PIN  = 14;
+
+// Buzzers
+const Buzzer BUZZERS[AMOUNT_OF_SLOTS] = {
+  {27},
+  {28}
+};
 
 // =======================
-// Buzzer
+// Global State
 // =======================
-int BUZZER_PIN = 27;
+bool occupied[AMOUNT_OF_SLOTS] = {false, false};
+bool alarmed[AMOUNT_OF_SLOTS]  = {false, false};
 
 // =======================
-// Helper Functions
+// Ultrasonic
 // =======================
 float measureDistance(int trig, int echo) {
   digitalWrite(trig, LOW);
@@ -58,21 +68,31 @@ float measureDistance(int trig, int echo) {
   digitalWrite(trig, LOW);
 
   long duration = pulseIn(echo, HIGH, 30000);
+  if(duration == 0) return 999;
+
   float distance = duration * 0.034 / 2;
 
-  Serial.print("Distance: ");
-  Serial.println(distance);
-  if (duration == 0) return 999;  
+  Serial.printf("Distance: %.2f\n", distance);
   return distance;
 }
 
+// =======================
+// Alarm
+// =======================
 void alert(int slot) {
-  tone(BUZZER_PIN, 1000, 300);
+  int pin = BUZZERS[slot].pin;
+  tone(pin, 1000, 300);
   delay(50);
 }
 
+bool isNeedToAlarm(int i, bool booked, bool confirmed) {
+  if(!booked && occupied[i]) return true;
+  if(booked && !confirmed && occupied[i]) return true;
+  return false;
+}
+
 // =======================
-// API: GET
+// GET API
 // =======================
 bool getFromAPI(JsonDocument &doc) {
   if (WiFi.status() != WL_CONNECTED) return false;
@@ -83,31 +103,31 @@ bool getFromAPI(JsonDocument &doc) {
   int code = http.GET();
   Serial.print("GET Response: ");
   Serial.println(code);
+
   if (code != 200) {
     http.end();
     return false;
   }
 
-  String response = http.getString();
-  deserializeJson(doc, response);
+  deserializeJson(doc, http.getString());
   http.end();
   return true;
 }
 
 // =======================
-// API: POST
+// POST API
 // =======================
 void sendToAPI() {
   if (WiFi.status() != WL_CONNECTED) return;
 
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<512> doc;
   JsonArray arr = doc.createNestedArray("slots");
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
     JsonObject slot = arr.createNestedObject();
-    slot["no"] = i + 1;
+    slot["id_slot"] = i + 1;
     slot["occupied"] = occupied[i];
-    slot["calculated"] = calculated[i];
+    slot["alarmed"] = alarmed[i];
   }
 
   String json;
@@ -139,11 +159,15 @@ void openGate(Servo &gate) {
 void setup() {
   Serial.begin(115200);
 
-  pinMode(BUZZER_PIN, OUTPUT);
+  // Buzzer pins
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
+    pinMode(BUZZERS[i].pin, OUTPUT);
+  }
 
-  for (int i = 0; i < 3; i++) {
-    pinMode(sensors[i].trig, OUTPUT);
-    pinMode(sensors[i].echo, INPUT);
+  // Ultrasonic pins
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
+    pinMode(SENSOR_PINS[i].trig, OUTPUT);
+    pinMode(SENSOR_PINS[i].echo, INPUT);
   }
 
   enterGate.attach(ENTER_GATE_PIN);
@@ -153,7 +177,7 @@ void setup() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print("x");
+    Serial.print(".");
     delay(500);
   }
 
@@ -165,43 +189,48 @@ void setup() {
 // LOOP
 // =======================
 void loop() {
-  // 1. Read Ultrasonic
-  for (int i = 0; i < 3; i++) {
-    float dist = measureDistance(sensors[i].trig, sensors[i].echo);
+  // 1. Ultrasonic sensing
+  for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
+    float dist = measureDistance(SENSOR_PINS[i].trig, SENSOR_PINS[i].echo);
     occupied[i] = (dist < 10);
-    Serial.print(occupied[i]);
-    Serial.println();
   }
-  
 
-  // 2. GET from API
   StaticJsonDocument<512> apiResponse;
   bool ok = getFromAPI(apiResponse);
 
   if (ok) {
-    JsonArray slots = apiResponse["slots"];
-    JsonObject gate = apiResponse["gate"];
+    JsonArray slots = apiResponse["slots"].as<JsonArray>();
+    JsonArray gates = apiResponse["gates"].as<JsonArray>();
 
-    // --- Slot Warning Logic ---
-    for (int i = 0; i < 3; i++) {
-      bool booked = slots[i]["booked"];
-      bool confirmed = slots[i]["confirmed"];
-      bool calc = slots[i]["calculated"];
+    // Slot logic
+    for (JsonObject slot : slots) {
+      int id = slot["id_slot"];
+      bool booked = slot["booked"];
+      bool confirmed = slot["confirmed"];
 
-      if (!calc) {
-        if (occupied[i] && !confirmed) alert(i);
-        if (occupied[i] && !booked) alert(i);
-        if (occupied[i] && booked && confirmed) calculated[i] = true;
-      }
+      int index = id - 1;
+      if (index < 0 || index >= AMOUNT_OF_SLOTS) continue;
+
+      alarmed[index] = isNeedToAlarm(index, booked, confirmed);
+      if (alarmed[index]) alert(index);
     }
 
-    // --- Gate Logic ---
-    if (gate["enterShouldOpen"]) openGate(enterGate);
-    if (gate["exitShouldOpen"]) openGate(exitGate);
+    // Gate logic
+    for (JsonObject gate : gates) {
+      int id = gate["id_aktuator"];
+      bool buka = gate["buka"];
+
+      if (buka) {
+        if (id == 0) openGate(enterGate);
+        else if (id == 1) openGate(exitGate);
+        else {
+          Serial.print("Invalid gate actuator: ");
+          Serial.println(id);
+        }
+      }
+    }
   }
 
-  // 3. POST to API
   sendToAPI();
-
   delay(2000);
 }
