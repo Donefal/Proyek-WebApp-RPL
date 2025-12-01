@@ -9,13 +9,20 @@
       tailwind.config = {
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
             colors: {
-              brandPurple: "#7a1ee6",
-              brandPink: "#f34fff",
-              cardBg: "#f4f2ff",
+              // Mengambil nuansa ungu dari foto referensi
+              brandPurple: "#6C63FF", 
+              brandDarkPurple: "#4834d4",
+              brandPink: "#a29bfe",
+              bgLight: "#f8f9fd", // Warna latar belakang dashboard yang bersih
             },
             boxShadow: {
-              neon: "0 25px 60px hsla(268, 80.00%, 51.00%, 0.35)",
+              // Mengubah shadow neon menjadi soft shadow yang elegan seperti kartu di foto
+              'soft': "0 10px 40px -10px rgba(108, 99, 255, 0.15)",
+              'card': "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
             },
           },
         },
@@ -29,7 +36,7 @@
         <div class="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="bg-white/20 rounded-xl p-2">
-              <img src="logo.png" alt="Parkingly" class="w-10 h-10">
+              <img src="elemen/logo.png" alt="Parkingly" class="w-10 h-10">
             </div>
             <div>
               <p class="text-4xl font-bold text-white">Parkingly</p>
@@ -43,9 +50,9 @@
         class="flex-1 w-full mx-auto max-w-6xl px-6 py-12 flex flex-col lg:flex-row items-center gap-10"
       >
         <div
-          class="w-full lg:w-1/2 bg-white rounded-3xl p-6 shadow-neon relative overflow-hidden"
+          class="w-full lg:w-1/2 rounded-3xl p-6 relative overflow-hidden"
         >
-          
+          <img src="elemen/sign.png" alt="sign" class="w-full h-auto" />
         </div>
 
         <div

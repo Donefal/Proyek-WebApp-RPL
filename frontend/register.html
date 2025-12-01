@@ -9,13 +9,20 @@
       tailwind.config = {
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
             colors: {
-              brandPurple: "#7a1ee6",
-              brandPink: "#f34fff",
-              cardBg: "#f4f2ff",
+              // Mengambil nuansa ungu dari foto referensi
+              brandPurple: "#6C63FF", 
+              brandDarkPurple: "#4834d4",
+              brandPink: "#a29bfe",
+              bgLight: "#f8f9fd", // Warna latar belakang dashboard yang bersih
             },
             boxShadow: {
-              neon: "0 25px 60px rgba(122,30,230,0.35)",
+              // Mengubah shadow neon menjadi soft shadow yang elegan seperti kartu di foto
+              'soft': "0 10px 40px -10px rgba(108, 99, 255, 0.15)",
+              'card': "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
             },
           },
         },
@@ -25,15 +32,13 @@
   <body class="bg-gradient-to-b from-brandPurple via-brandPink/20 to-white min-h-screen">
     <div class="min-h-screen flex flex-col">
       <header class="bg-gradient-to-r from-brandPurple to-brandPink text-white">
-        <div class="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
+        <div class="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="bg-white/20 rounded-xl p-2">
-              <img src="logo.png" alt="Parkingly" class="w-10 h-10">
+              <img src="elemen/logo.png" alt="Parkingly" class="w-10 h-10">
             </div>
             <div>
-              <p class="uppercase tracking-[0.3em] text-xs font-semibold">Scan</p>
-              <p class="uppercase text-sm font-bold">Open the gate</p>
-            </div>
+              <p class="text-4xl font-bold text-white">Parkingly</p>
           </div>
         </div>
       </header>
@@ -42,52 +47,9 @@
         class="flex-1 w-full mx-auto max-w-6xl px-6 py-12 flex flex-col lg:flex-row items-center gap-10"
       >
         <div
-          class="w-full lg:w-1/2 bg-white rounded-3xl p-6 shadow-neon relative overflow-hidden"
+          class="w-full lg:w-1/2 rounded-3xl p-6 relative overflow-hidden"
         >
-          <div class="absolute inset-0 bg-gradient-to-b from-brandPurple/10 to-brandPink/5"></div>
-          <div class="relative">
-            <div class="flex items-center justify-between text-brandPurple mb-6">
-              <h2 class="text-xl font-bold uppercase tracking-[0.4em]">Parkir</h2>
-              <span class="text-sm font-semibold">SMART PARK</span>
-            </div>
-            <div class="bg-gradient-to-r from-brandPurple to-brandPink rounded-3xl p-5 text-white">
-              <p class="uppercase text-xs tracking-[0.4em] mb-2">Free</p>
-              <p class="text-lg font-bold">Smart Parking Access</p>
-              <p class="text-sm opacity-80 mt-2">
-                Gabung dan dapatkan akses parkir otomatis kapan saja.
-              </p>
-            </div>
-            <div class="mt-8 grid grid-cols-3 gap-4 text-center text-brandPurple font-semibold">
-              <div class="bg-cardBg rounded-2xl py-4">
-                <p class="text-sm uppercase tracking-wide">Scan</p>
-              </div>
-              <div class="bg-cardBg rounded-2xl py-4">
-                <p class="text-sm uppercase tracking-wide">History</p>
-              </div>
-              <div class="bg-cardBg rounded-2xl py-4">
-                <p class="text-sm uppercase tracking-wide">Wallet</p>
-              </div>
-            </div>
-            <div class="mt-8 h-48 bg-cardBg rounded-3xl flex items-center justify-center">
-              <div class="text-center">
-                <svg
-                  viewBox="0 0 200 120"
-                  class="w-40 mx-auto"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <rect width="200" height="120" rx="20" fill="#c9c4ff" />
-                  <rect x="20" y="40" width="160" height="50" rx="14" fill="#a38bff" />
-                  <circle cx="70" cy="65" r="12" fill="#4c1fb3" />
-                  <circle cx="130" cy="65" r="12" fill="#4c1fb3" />
-                  <rect x="45" y="30" width="110" height="12" rx="6" fill="#8366ff" />
-                </svg>
-                <p class="uppercase text-xs tracking-[0.4em] text-brandPurple mt-3">
-                  Smart lot preview
-                </p>
-              </div>
-            </div>
-          </div>
+          <img src="elemen/sign.png" alt="Sign" class="w-full h-auto" />
         </div>
 
         <div
