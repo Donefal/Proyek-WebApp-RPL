@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parkingl</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo-section">
+            <div class="logo-icon"><img src="logo.png" alt="Parkingly" style="width: 50px; height: 50px;"></div>
+            <h1>Parkingly</h1>
+          </div>
+          <div class="header-actions hidden" id="headerActions">
+            <div class="user-info">
+              <span class="user-icon">👤</span>
+              <span id="activeUser"></span>
+            </div>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- User Area -->
+      <section id="userView" class="hidden">
+        <div class="app-layout">
+          <aside class="sidebar" id="userSidebar">
+            <div class="sidebar-header">
+              <h3>Menu</h3>
+            </div>
+            <nav class="sidebar-nav">
+              <button data-view="map" class="nav-item active">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-text">Map</span>
+              </button>
+              <button data-view="wallet" class="nav-item">
+                <span class="nav-icon">💳</span>
+                <span class="nav-text">Wallet</span>
+              </button>
+              <button data-view="history" class="nav-item">
+                <span class="nav-icon">📋</span>
+                <span class="nav-text">Riwayat</span>
+              </button>
+            </nav>
+          </aside>
+          <div class="view-container">
+            <div class="view visible" data-panel="map">
+              <div class="parking-main-container">
+                <div class="card parking-grid-card">
+                  <div class="card-header">
+                    <div class="header-left">
+                      <h2>Ketersediaan Lahan Parkir</h2>
+                      <div class="stats-badge">
+                        <span class="stats-icon">📍</span>
+                        <span>Slot Tersedia: <strong id="heroSlots">—</strong></span>
+                      </div>
+                    </div>
+                    <div class="spot-header">
+                      <button id="refreshSpots" class="refresh-btn">🔄 Refresh</button>
+                      <select id="spotFilter" class="filter-select">
+                        <option value="all">Semua</option>
+                        <option value="available">Tersedia</option>
+                        <option value="occupied">Terisi</option>
+                      </select>
+                      <button id="goToBooking" class="booking-btn">📅 Booking</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Cinema-style parking grid -->
+                  <div class="parking-cinema">
+                    <div class="screen-indicator">
+                      <div class="screen-line"></div>
+                      <span class="screen-text">Pintu Masuk</span>
+                      <div class="screen-line"></div>
+                    </div>
+                    
+                    <div class="legend">
+                      <div class="legend-item">
+                        <div class="legend-box available"></div>
+                        <span>Tersedia</span>
+                      </div>
+                      <div class="legend-item">
+                        <div class="legend-box occupied"></div>
+                        <span>Terisi</span>
+                      </div>
+                      <div class="legend-item">
+                        <div class="legend-box selected"></div>
+                        <span>Dipilih</span>
+                      </div>
+                    </div>
+                    
+                    <div id="parkingGrid" class="parking-grid"></div>
+                    
+                    <div class="selected-slot-info" id="selectedSlotInfo">
+                      <div class="selected-slot-content">
+                        <div class="slot-info-left">
+                          <span class="slot-label">Slot Dipilih:</span>
+                          <strong id="selectedSpotName">Belum ada slot yang dipilih</strong>
+                        </div>
+                        <button id="goToBookingSelected" class="book-now-btn" disabled>
+                          Lanjutkan Booking →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view" data-panel="wallet">
+              <div class="wallet-container">
+                <div class="wallet-card">
+                  <div class="wallet-header">
+                    <div class="wallet-icon">💳</div>
+                    <div>
+                      <h2>Dompet Digital</h2>
+                      <p class="wallet-subtitle">Kelola saldo parkir Anda</p>
+                    </div>
+                  </div>
+                  
+                  <div class="balance-card">
+                    <div class="balance-label">Saldo Tersedia</div>
+                    <div class="balance-amount" id="walletBalance">Rp0</div>
+                    <div class="balance-info">Saldo akan dipotong otomatis saat konfirmasi keluar parkir</div>
+                  </div>
+
+                  <div class="topup-section">
+                    <h3>Top Up Saldo</h3>
+                    <form id="topupForm" class="topup-form">
+                      <div class="topup-input-group">
+                        <label class="topup-label">
+                          <span class="label-text">Nominal Top Up</span>
+                          <div class="input-wrapper">
+                            <span class="currency-prefix">Rp</span>
+                            <input 
+                              type="number" 
+                              name="amount" 
+                              min="1000" 
+                              step="1000" 
+                              placeholder="Masukkan nominal"
+                              required 
+                              class="topup-input"
+                            />
+                          </div>
+                        </label>
+                        <button type="submit" class="topup-btn">
+                          <span class="btn-icon">💰</span>
+                          <span>Top Up Sekarang</span>
+                        </button>
+                      </div>
+                    </form>
+                    
+                    <div class="quick-amounts">
+                      <span class="quick-label">Pilih cepat:</span>
+                      <div class="amount-buttons">
+                        <button class="amount-btn" data-amount="10000">Rp10.000</button>
+                        <button class="amount-btn" data-amount="25000">Rp25.000</button>
+                        <button class="amount-btn" data-amount="50000">Rp50.000</button>
+                        <button class="amount-btn" data-amount="100000">Rp100.000</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view" data-panel="history">
+              <div class="history-container">
+                <div class="history-header">
+                  <div class="history-title-section">
+                    <div class="history-icon">📋</div>
+                    <div>
+                      <h2>Riwayat Parkir</h2>
+                      <p class="history-subtitle">Daftar transaksi parkir Anda</p>
+                    </div>
+                  </div>
+                  <button id="refreshHistory" class="refresh-history-btn">
+                    <span class="refresh-icon">🔄</span>
+                    <span>Refresh</span>
+                  </button>
+                </div>
+                
+                <div class="history-table-container">
+                  <table class="history-table">
+                    <thead>
+                      <tr>
+                        <th>Booking ID</th>
+                        <th>Spot</th>
+                        <th>Waktu Masuk</th>
+                        <th>Waktu Keluar</th>
+                        <th>Biaya</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                      <tr>
+                        <td colspan="6" class="empty-state">
+                          <div class="empty-icon">📭</div>
+                          <p class="empty-text">Belum ada riwayat parkir</p>
+                          <p class="empty-subtext">Riwayat parkir Anda akan muncul di sini</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Admin Area -->
+      <section id="adminView" class="hidden">
+        <div class="app-layout">
+          <aside class="sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+              <h3>Admin Menu</h3>
+            </div>
+            <nav class="sidebar-nav">
+              <button data-view="scanner" class="nav-item active">
+                <span class="nav-icon">📱</span>
+                <span class="nav-text">Scan QR</span>
+              </button>
+              <button data-view="availability" class="nav-item">
+                <span class="nav-icon">📍</span>
+                <span class="nav-text">Ketersediaan</span>
+              </button>
+              <button data-view="reports" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Laporan</span>
+              </button>
+            </nav>
+          </aside>
+          <div class="view-container">
+            <div class="view visible" data-panel="scanner">
+              <div class="admin-scanner-container">
+                <div class="admin-scanner-header">
+                  <div class="scanner-title-section">
+                    <div class="scanner-icon">📱</div>
+                    <div>
+                      <h2>Konfirmasi QR Code</h2>
+                      <p class="scanner-subtitle">Validasi masuk dan keluar kendaraan</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="scanner-card">
+                  <div class="scanner-form-section">
+                    <div class="form-header">
+                      <h3>Input Token QR</h3>
+                      <p class="form-description">Masukkan token QR code dari pengguna untuk validasi</p>
+                    </div>
+                    
+                    <form id="adminScanForm" class="scanner-form-modern">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <span class="label-text">Token QR Code</span>
+                          <div class="input-group">
+                            <span class="input-icon">🔑</span>
+                            <input 
+                              type="text" 
+                              name="qrToken" 
+                              placeholder="Masukkan token QR code"
+                              required 
+                              class="scanner-input"
+                            />
+                          </div>
+                        </label>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">
+                          <span class="label-text">Tipe Validasi</span>
+                          <div class="select-wrapper">
+                            <select name="action" class="scanner-select">
+                              <option value="enter">✅ Validasi Masuk</option>
+                              <option value="exit">🚪 Validasi Keluar</option>
+                            </select>
+                            <span class="select-arrow">▼</span>
+                          </div>
+                        </label>
+                      </div>
+
+                      <button type="submit" class="scanner-submit-btn">
+                        <span class="btn-icon">✓</span>
+                        <span>Proses Validasi</span>
+                      </button>
+                    </form>
+                  </div>
+
+                  <div class="scanner-result-section">
+                    <div class="result-header">
+                      <span class="result-label">Hasil Validasi</span>
+                    </div>
+                    <div id="adminScanResult" class="scan-result-box">
+                      <div class="result-icon">⏳</div>
+                      <p class="result-text">Belum ada pemindaian</p>
+                      <p class="result-subtext">Hasil validasi akan muncul di sini</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view" data-panel="availability">
+              <div class="admin-availability-container">
+                <div class="availability-header">
+                  <div class="availability-title-section">
+                    <div class="availability-icon">📍</div>
+                    <div>
+                      <h2>Status Lahan Parkir</h2>
+                      <p class="availability-subtitle">Monitor ketersediaan semua slot parkir</p>
+                    </div>
+                  </div>
+                  <button id="adminRefreshSpots" class="admin-refresh-btn">
+                    <span class="refresh-icon">🔄</span>
+                    <span>Refresh</span>
+                  </button>
+                </div>
+
+                <div class="availability-stats">
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin available">✓</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Tersedia</span>
+                      <strong class="stat-value-admin" id="adminAvailableCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin occupied">✗</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Terisi</span>
+                      <strong class="stat-value-admin" id="adminOccupiedCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin total">📊</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Total Slot</span>
+                      <strong class="stat-value-admin" id="adminTotalCount">0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="admin-spots-grid-container">
+                  <div id="adminSpotList" class="admin-spots-grid"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view" data-panel="reports">
+              <div class="admin-reports-container">
+                <div class="reports-header">
+                  <div class="reports-title-section">
+                    <div class="reports-icon">📊</div>
+                    <div>
+                      <h2>Dashboard Laporan</h2>
+                      <p class="reports-subtitle">Ringkasan kinerja dan statistik parkir</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="reports-grid">
+                  <div class="report-card financial">
+                    <div class="report-card-header">
+                      <div class="report-icon">💰</div>
+                      <h3>Ringkasan Keuangan</h3>
+                    </div>
+                    <div class="report-content">
+                      <div class="report-item">
+                        <div class="report-item-header">
+                          <span class="report-label">Pendapatan Hari Ini</span>
+                          <span class="report-badge today">Hari Ini</span>
+                        </div>
+                        <div class="report-value" data-report="todayRevenue">Rp0</div>
+                      </div>
+                      <div class="report-divider"></div>
+                      <div class="report-item">
+                        <div class="report-item-header">
+                          <span class="report-label">Pendapatan Bulan Ini</span>
+                          <span class="report-badge month">Bulan Ini</span>
+                        </div>
+                        <div class="report-value" data-report="monthRevenue">Rp0</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="report-card traffic">
+                    <div class="report-card-header">
+                      <div class="report-icon">🚗</div>
+                      <h3>Traffic Kendaraan</h3>
+                    </div>
+                    <div class="report-content">
+                      <div class="report-item">
+                        <div class="report-item-header">
+                          <span class="report-label">Mobil Masuk</span>
+                          <span class="report-badge entry">Masuk</span>
+                        </div>
+                        <div class="report-value" data-report="todayEntries">0</div>
+                        <p class="report-sublabel">Hari ini</p>
+                      </div>
+                      <div class="report-divider"></div>
+                      <div class="report-item">
+                        <div class="report-item-header">
+                          <span class="report-label">Mobil Keluar</span>
+                          <span class="report-badge exit">Keluar</span>
+                        </div>
+                        <div class="report-value" data-report="todayExits">0</div>
+                        <p class="report-sublabel">Hari ini</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <template id="historyTemplate">
+      <tr>
+        <td>
+          <div class="booking-id-cell">
+            <span class="booking-id-badge" data-field="bookingId"></span>
+          </div>
+        </td>
+        <td>
+          <div class="spot-cell">
+            <span class="spot-badge" data-field="spot"></span>
+          </div>
+        </td>
+        <td data-field="start"></td>
+        <td data-field="end"></td>
+        <td>
+          <span class="cost-amount" data-field="cost"></span>
+        </td>
+        <td>
+          <span class="status-badge-completed">Selesai</span>
+        </td>
+      </tr>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
+
+

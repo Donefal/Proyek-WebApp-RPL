@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parkingly | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brandPurple: "#7a1ee6",
+              brandPink: "#f34fff",
+              cardBg: "#f4f2ff",
+            },
+            boxShadow: {
+              neon: "0 25px 60px hsla(268, 80.00%, 51.00%, 0.35)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-gradient-to-b from-brandPurple via-brandPink/20 to-white min-h-screen">
+    <div class="min-h-screen flex flex-col">
+      <!-- Top navigation -->
+      <header class="bg-gradient-to-r from-brandPurple to-brandPink text-white">
+        <div class="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/20 rounded-xl p-2">
+              <img src="logo.png" alt="Parkingly" class="w-10 h-10">
+            </div>
+            <div>
+              <p class="text-4xl font-bold text-white">Parkingly</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Hero -->
+      <main
+        class="flex-1 w-full mx-auto max-w-6xl px-6 py-12 flex flex-col lg:flex-row items-center gap-10"
+      >
+        <div
+          class="w-full lg:w-1/2 bg-white rounded-3xl p-6 shadow-neon relative overflow-hidden"
+        >
+          
+        </div>
+
+        <div
+          class="w-full lg:w-1/2 bg-white rounded-[40px] shadow-neon relative overflow-hidden"
+        >
+          <div class="absolute -top-20 -right-24 w-80 h-80 bg-brandPurple/20 rounded-full blur-3xl"></div>
+          <div class="relative px-10 py-12">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-3xl font-bold text-brandPurple">Sign In</h2>
+              <p class="uppercase tracking-[0.4em] text-brandPurple text-sm">Parking</p>
+            </div>
+            <form id="loginForm" class="space-y-5">
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Password</label
+                >
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+              </div>
+              <div class="flex flex-wrap gap-4 pt-2">
+                <button
+                  type="submit"
+                  class="bg-brandPurple text-white font-semibold px-8 py-3 rounded-2xl shadow-lg shadow-brandPurple/40"
+                >
+                  Submit
+                </button>
+                <button
+                  type="button"
+                  id="goRegister"
+                  class="border-2 border-brandPurple text-brandPurple font-semibold px-8 py-3 rounded-2xl"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="auth.js" type="module"></script>
+  </body>
+</html>
+

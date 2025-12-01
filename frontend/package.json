@@ -1,0 +1,16 @@
+{
+  "name": "smart-parking-portal",
+  "version": "1.0.0",
+  "description": "Prototype backend for Smart Parking frontend",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nanoid": "^5.0.6"
+  }
+}
+
+
