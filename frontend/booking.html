@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking - Parkingly</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo-section">
+            <div class="logo-icon"><img src="logo.png" alt="Parkingly" style="width: 50px; height: 50px;"></div>
+            <h1>Parkingly</h1>
+          </div>
+          <div class="header-actions hidden" id="headerActions">
+            <div class="user-info">
+              <span class="user-icon">👤</span>
+              <span id="activeUser"></span>
+            </div>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- User Area -->
+      <section id="userView" class="hidden">
+        <div class="booking-page-container">
+          <div class="booking-header">
+            <button id="backToMap" class="back-btn">← Kembali ke Map</button>
+            <h2>Booking Parkingly</h2>
+            <p class="subtitle">Atur parkirmu dengan mudah dan cepat</p>
+          </div>
+
+          <!-- New Booking Section -->
+          <div id="newBookingSection" class="booking-section">
+            <div class="booking-card-modern">
+              <div class="booking-card-header">
+                <div class="card-icon">📅</div>
+                <div>
+                  <h3>Buat Booking Baru</h3>
+                  <p class="card-subtitle">Pilih slot parkir yang tersedia</p>
+                </div>
+              </div>
+
+              <div class="selected-spot-display">
+                <div class="spot-display-header">
+                  <span class="display-label">Slot yang Dipilih</span>
+                </div>
+                <div class="spot-display-content">
+                  <div class="spot-display-main">
+                    <div class="spot-code-large" id="selectedSpotCode">-</div>
+                    <div class="spot-name-large" id="selectedSpotNameDisplay">Belum dipilih</div>
+                    <div class="spot-level" id="selectedSpotLevel">-</div>
+                  </div>
+                  <div class="spot-pricing">
+                    <div class="pricing-item">
+                      <span class="pricing-label">1 Jam Pertama</span>
+                      <span class="pricing-value">Rp10.000</span>
+                    </div>
+                    <div class="pricing-divider"></div>
+                    <div class="pricing-item">
+                      <span class="pricing-label">Jam Berikutnya</span>
+                      <span class="pricing-value">Rp5.000/jam</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form id="bookingForm" class="booking-form-modern">
+                <input type="hidden" name="spotId" id="selectedSpotId" />
+                <button type="submit" class="submit-booking-btn" id="submitBookingBtn" disabled>
+                  <span class="btn-icon">✓</span>
+                  <span>Konfirmasi Booking</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Active Booking Section -->
+          <div id="activeBookingSection" class="booking-section hidden">
+            <div class="active-booking-container">
+              <div class="active-booking-header-modern">
+                <div class="booking-badge-modern">
+                  <span class="badge-icon">✅</span>
+                  <span>Booking Aktif</span>
+                </div>
+                <div class="booking-id-modern">
+                  ID: <span data-field="bookingId" class="booking-id-value">-</span>
+                </div>
+              </div>
+
+              <div class="booking-content-modern">
+                <div class="booking-status-card">
+                  <div class="status-header">
+                    <span class="status-label">Status</span>
+                    <div class="status-badge-large" data-field="bookingStatus">-</div>
+                  </div>
+                  
+                  <div class="metrics-grid-modern">
+                    <div class="metric-card-modern">
+                      <div class="metric-icon">⏱️</div>
+                      <div class="metric-content">
+                        <span class="metric-label">Durasi Parkir</span>
+                        <strong data-field="duration" class="metric-value">-</strong>
+                      </div>
+                    </div>
+                    <div class="metric-card-modern">
+                      <div class="metric-icon">💰</div>
+                      <div class="metric-content">
+                        <span class="metric-label">Biaya Saat Ini</span>
+                        <strong data-field="cost" class="metric-value">Rp0</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="qr-section-modern">
+                  <div class="qr-header">
+                    <span class="qr-label">QR Code Akses</span>
+                  </div>
+                  <div class="qr-box-modern" id="qrBox"></div>
+                  <p class="qr-instruction-modern">
+                    Tunjukkan QR code ini kepada petugas untuk validasi masuk dan keluar
+                  </p>
+                  <button id="cancelBooking" class="cancel-booking-btn">
+                    <span class="btn-icon">✕</span>
+                    <span>Batalkan Booking</span>
+                  </button>
+                  <p class="warning-message hidden" id="qrExpiredHint">
+                    ⚠️ QR kadaluarsa, lakukan booking ulang.
+                  </p>
+                </div>
+              </div>
+
+              <div class="progress-timeline-modern">
+                <h4 class="timeline-title">Progress Booking</h4>
+                <div class="timeline-modern">
+                  <div class="timeline-item-modern completed">
+                    <div class="timeline-marker">
+                      <div class="marker-dot"></div>
+                      <div class="marker-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                      <span class="timeline-step">Pilih lahan</span>
+                      <small class="timeline-status">Selesai</small>
+                    </div>
+                  </div>
+                  <div class="timeline-item-modern" data-step="qr">
+                    <div class="timeline-marker">
+                      <div class="marker-dot"></div>
+                      <div class="marker-line"></div>
+                    </div>
+                    <div class="timeline-content">
+                      <span class="timeline-step">QR diterbitkan</span>
+                      <small data-field="qrCode" class="timeline-status">-</small>
+                    </div>
+                  </div>
+                  <div class="timeline-item-modern" data-step="scan">
+                    <div class="timeline-marker">
+                      <div class="marker-dot"></div>
+                    </div>
+                    <div class="timeline-content">
+                      <span class="timeline-step">Pindai QR code</span>
+                      <small class="timeline-status">Menunggu</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="app.js" type="module"></script>
+    <script src="booking.js" type="module"></script>
+  </body>
+</html>
+

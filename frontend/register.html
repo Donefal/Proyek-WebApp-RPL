@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Parking | Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brandPurple: "#7a1ee6",
+              brandPink: "#f34fff",
+              cardBg: "#f4f2ff",
+            },
+            boxShadow: {
+              neon: "0 25px 60px rgba(122,30,230,0.35)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-gradient-to-b from-brandPurple via-brandPink/20 to-white min-h-screen">
+    <div class="min-h-screen flex flex-col">
+      <header class="bg-gradient-to-r from-brandPurple to-brandPink text-white">
+        <div class="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/20 rounded-xl p-2">
+              <img src="logo.png" alt="Parkingly" class="w-10 h-10">
+            </div>
+            <div>
+              <p class="uppercase tracking-[0.3em] text-xs font-semibold">Scan</p>
+              <p class="uppercase text-sm font-bold">Open the gate</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main
+        class="flex-1 w-full mx-auto max-w-6xl px-6 py-12 flex flex-col lg:flex-row items-center gap-10"
+      >
+        <div
+          class="w-full lg:w-1/2 bg-white rounded-3xl p-6 shadow-neon relative overflow-hidden"
+        >
+          <div class="absolute inset-0 bg-gradient-to-b from-brandPurple/10 to-brandPink/5"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between text-brandPurple mb-6">
+              <h2 class="text-xl font-bold uppercase tracking-[0.4em]">Parkir</h2>
+              <span class="text-sm font-semibold">SMART PARK</span>
+            </div>
+            <div class="bg-gradient-to-r from-brandPurple to-brandPink rounded-3xl p-5 text-white">
+              <p class="uppercase text-xs tracking-[0.4em] mb-2">Free</p>
+              <p class="text-lg font-bold">Smart Parking Access</p>
+              <p class="text-sm opacity-80 mt-2">
+                Gabung dan dapatkan akses parkir otomatis kapan saja.
+              </p>
+            </div>
+            <div class="mt-8 grid grid-cols-3 gap-4 text-center text-brandPurple font-semibold">
+              <div class="bg-cardBg rounded-2xl py-4">
+                <p class="text-sm uppercase tracking-wide">Scan</p>
+              </div>
+              <div class="bg-cardBg rounded-2xl py-4">
+                <p class="text-sm uppercase tracking-wide">History</p>
+              </div>
+              <div class="bg-cardBg rounded-2xl py-4">
+                <p class="text-sm uppercase tracking-wide">Wallet</p>
+              </div>
+            </div>
+            <div class="mt-8 h-48 bg-cardBg rounded-3xl flex items-center justify-center">
+              <div class="text-center">
+                <svg
+                  viewBox="0 0 200 120"
+                  class="w-40 mx-auto"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect width="200" height="120" rx="20" fill="#c9c4ff" />
+                  <rect x="20" y="40" width="160" height="50" rx="14" fill="#a38bff" />
+                  <circle cx="70" cy="65" r="12" fill="#4c1fb3" />
+                  <circle cx="130" cy="65" r="12" fill="#4c1fb3" />
+                  <rect x="45" y="30" width="110" height="12" rx="6" fill="#8366ff" />
+                </svg>
+                <p class="uppercase text-xs tracking-[0.4em] text-brandPurple mt-3">
+                  Smart lot preview
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="w-full lg:w-1/2 bg-white rounded-[40px] shadow-neon relative overflow-hidden"
+        >
+          <div class="absolute -top-20 -right-24 w-80 h-80 bg-brandPurple/20 rounded-full blur-3xl"></div>
+          <div class="relative px-10 py-12">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-3xl font-bold text-brandPurple">Sign Up</h2>
+              <p class="uppercase tracking-[0.4em] text-brandPurple text-sm">Parking</p>
+            </div>
+            <form id="registerForm" class="space-y-5">
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Nama Lengkap</label
+                >
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Password</label
+                >
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+              </div>
+              <div class="flex flex-wrap gap-4 pt-2">
+                <button
+                  type="submit"
+                  class="bg-brandPurple text-white font-semibold px-8 py-3 rounded-2xl shadow-lg shadow-brandPurple/40"
+                >
+                  Daftar
+                </button>
+                <button
+                  type="button"
+                  id="goLogin"
+                  class="border-2 border-brandPurple text-brandPurple font-semibold px-8 py-3 rounded-2xl"
+                >
+                  Sign In
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="auth.js" type="module"></script>
+  </body>
+</html>
+
