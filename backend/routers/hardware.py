@@ -19,7 +19,8 @@ async def update_from_esp32(data: schemas.FromESP32, db: Session = Depends(get_d
         slot = db.query(models.Slot).filter(models.Slot.id_slot == slot_update.id_slot).first()
         if slot:
             slot.occupied = slot_update.occupied
-            slot.calculated = slot_update.calculated
+            # incoming schema provides `alarmed`, not `calculated`
+            slot.alarmed = slot_update.alarmed
 
     db.commit()
 

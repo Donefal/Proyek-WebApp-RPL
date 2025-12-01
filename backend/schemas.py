@@ -55,15 +55,20 @@ class SlotBase(BaseModel):
 
 
 class SlotCreate(SlotBase):
-    pass
+    # optional flags for initial state — default to False if omitted by client
+    booked: bool = False
+    confirmed: bool = False
+    occupied: bool = False
+    alarmed: bool = False
 
 
 class Slot(BaseModel):
     id_slot: int
-    booked: bool # Slot di booking
-    confirmed: bool # Slot sdh dikonfirmasi (true bila sudah scan)
-    occupied: bool # Slot sedang ada mobilnya
-    alarmed: bool # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
+    booked: bool = False # Slot di booking
+    confirmed: bool = False # Slot sdh dikonfirmasi (true bila sudah scan)
+    occupied: bool = False # Slot sedang ada mobilnya
+    alarmed: bool = False # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
+
     class Config:
         orm_mode = True
 

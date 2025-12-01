@@ -37,10 +37,10 @@ class Slot(Base):
     __tablename__ = "slot_condition"
 
     id_slot = Column(Integer, primary_key=True, index=True)
-    booked = Column(Boolean) # Slot di booking
-    confirmed = Column(Boolean) # Slot sdh dikonfirmasi (true bila sudah scan)
-    occupied = Column(Boolean) # Slot sedang ada mobilnya
-    alarmed = Column(Boolean) # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
+    booked = Column(Boolean, default=False, nullable=False) # Slot di booking
+    confirmed = Column(Boolean, default=False, nullable=False) # Slot sdh dikonfirmasi (true bila sudah scan)
+    occupied = Column(Boolean, default=False, nullable=False) # Slot sedang ada mobilnya
+    alarmed = Column(Boolean, default=False, nullable=False) # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
