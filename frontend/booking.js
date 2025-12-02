@@ -1,5 +1,5 @@
 // Booking page specific logic
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL = "http://localhost:8000";
 const STORAGE_KEY = "smartParkingSession";
 
 // Hanya izinkan slot nomor 1 dan 2 untuk bisa dibooking

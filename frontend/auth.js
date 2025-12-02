@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL = "http://localhost:8000";
 const STORAGE_KEY = "smartParkingSession";
 
 const loginForm = document.getElementById("loginForm");
@@ -20,7 +20,8 @@ async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, config);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Request failed");
+    // FastAPI mengembalikan error dalam format {"detail": "message"}
+    throw new Error(err.detail || err.message || "Request failed");
   }
   return res.json();
 }
