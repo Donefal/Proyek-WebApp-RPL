@@ -87,14 +87,12 @@ body {
 
 .logo-icon {
   font-size: rem;
-  background: rgba(255, 255, 255, 0.2);
   width: 50px;
   height: 50px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
   
 }
 
@@ -619,6 +617,7 @@ button.ghost {
 
 .parking-main-container {
   max-width: 100%;
+  height: 495px;
 }
 
 .refresh-btn {
@@ -1078,8 +1077,8 @@ td {
   }
   
   .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     font-size: 1.5rem;
   }
   
