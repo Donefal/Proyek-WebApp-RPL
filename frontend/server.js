@@ -284,6 +284,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Smart Parking API running on http://localhost:${PORT}`);
+  console.log(`Parkingly API running on http://localhost:${PORT}`);
 });
 
