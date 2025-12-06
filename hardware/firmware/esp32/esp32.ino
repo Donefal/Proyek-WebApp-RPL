@@ -46,8 +46,8 @@ const int EXIT_GATE_PIN  = 14;
 
 // Buzzers
 const Buzzer BUZZERS[AMOUNT_OF_SLOTS] = {
-  {27},
-  {28}
+  {12},
+  {13}
 };
 
 // =======================

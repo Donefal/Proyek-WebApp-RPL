@@ -22,7 +22,22 @@ class Customer(CustomerBase):
     id_customer: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+# ======================================================
+# AUTHENTICATION
+# ======================================================
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 
 # ======================================================
@@ -43,7 +58,7 @@ class Admin(AdminBase):
     id_admin: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ======================================================
@@ -70,7 +85,7 @@ class Slot(BaseModel):
     alarmed: bool = False # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ======================================================
@@ -91,7 +106,7 @@ class Aktuator(BaseModel):
     usable: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ======================================================
@@ -129,7 +144,7 @@ class BookingUpdate(BaseModel):
     status: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 # ------ Nested (include slot & actuators) ------
 class Mikrokontroler(BaseModel):
     id_mikrokontroler: int
@@ -139,7 +154,7 @@ class Mikrokontroler(BaseModel):
     aktuator: Optional[List[Aktuator]] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ======================================================
