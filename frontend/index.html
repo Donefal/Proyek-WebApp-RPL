@@ -69,6 +69,9 @@
                         <option value="occupied">Terisi</option>
                       </select>
                       <button id="goToBooking" class="booking-btn">📅 Booking</button>
+                      <button id="goToBookingPageBtn" class="booking-btn" style="display: none; margin-left: 0.5rem;">
+                        📋 Lihat Booking
+                      </button>
                     </div>
                   </div>
                   
@@ -257,6 +260,22 @@
                       <p class="form-description">Masukkan token QR code dari pengguna untuk validasi</p>
                     </div>
                     
+                    <div style="margin-bottom: 1rem;">
+                      <button id="startCameraBtn" class="scanner-submit-btn" style="width: 100%; margin-bottom: 0.5rem;">
+                        <span class="btn-icon">📷</span>
+                        <span>Buka Kamera untuk Scan QR</span>
+                      </button>
+                      <button id="stopCameraBtn" class="scanner-submit-btn" style="width: 100%; display: none; background: #dc2626;">
+                        <span class="btn-icon">⏹</span>
+                        <span>Tutup Kamera</span>
+                      </button>
+                    </div>
+                    
+                    <div id="cameraContainer" style="display: none; margin-bottom: 1rem;">
+                      <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 8px; background: #000;"></video>
+                      <canvas id="qrCanvas" style="display: none;"></canvas>
+                    </div>
+                    
                     <form id="adminScanForm" class="scanner-form-modern">
                       <div class="form-group">
                         <label class="form-label">
@@ -266,7 +285,8 @@
                             <input 
                               type="text" 
                               name="qrToken" 
-                              placeholder="Masukkan token QR code"
+                              id="qrTokenInput"
+                              placeholder="Masukkan token QR code atau scan dengan kamera"
                               required 
                               class="scanner-input"
                             />
@@ -442,11 +462,13 @@
           <span class="cost-amount" data-field="cost"></span>
         </td>
         <td>
-          <span class="status-badge-completed">Selesai</span>
+          <span class="status-badge" data-field="status"></span>
         </td>
       </tr>
     </template>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="app.js" type="module"></script>
   </body>
 </html>
