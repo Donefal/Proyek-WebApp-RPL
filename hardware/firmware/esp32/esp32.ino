@@ -12,8 +12,8 @@ const char* password = "avinavin";
 // =======================
 // API Endpoints
 // =======================
-String GET_URL = "http://172.17.87.209:8000/hw/instruction";
-String POST_URL = "http://172.17.87.209:8000/hw/update";
+String GET_URL = "http://10.154.169.209:8000/hw/instruction";
+String POST_URL = "http://10.154.169.209:8000/hw/update";
 
 // =======================
 // Structs
@@ -32,8 +32,9 @@ struct Buzzer {
 // =======================
 const int AMOUNT_OF_SLOTS = 2;
 
+// {Trig, echo}
 const Ultrasonic SENSOR_PINS[AMOUNT_OF_SLOTS] = {
-  {18, 19},
+  {19, 21},
   {16, 17}
 };
 
@@ -46,8 +47,8 @@ const int EXIT_GATE_PIN  = 14;
 
 // Buzzers
 const Buzzer BUZZERS[AMOUNT_OF_SLOTS] = {
-  {12},
-  {13}
+  {25},
+  {26}
 };
 
 // =======================
@@ -72,7 +73,7 @@ float measureDistance(int trig, int echo) {
 
   float distance = duration * 0.034 / 2;
 
-  Serial.printf("Distance: %.2f\n", distance);
+  Serial.printf("Distance: %.2f, ", distance);
   return distance;
 }
 
@@ -83,6 +84,7 @@ void alert(int slot) {
   int pin = BUZZERS[slot].pin;
   tone(pin, 1000, 300);
   delay(50);
+  noTone(pin);
 }
 
 bool isNeedToAlarm(int i, bool booked, bool confirmed) {
@@ -193,7 +195,10 @@ void loop() {
   for (int i = 0; i < AMOUNT_OF_SLOTS; i++) {
     float dist = measureDistance(SENSOR_PINS[i].trig, SENSOR_PINS[i].echo);
     occupied[i] = (dist < 10);
+    Serial.print(occupied[i]);
+    Serial.print(" | ");
   }
+  Serial.println();
 
   StaticJsonDocument<512> apiResponse;
   bool ok = getFromAPI(apiResponse);
