@@ -34,6 +34,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
+    notelp: str
 
 
 class LoginRequest(BaseModel):

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import backend.models as models
@@ -10,6 +10,13 @@ router = APIRouter()
 
 FIRST_HOUR_RATE = 10000
 EXTRA_HOUR_RATE = 5000
+
+# GMT+7 timezone (WIB - Western Indonesian Time)
+GMT7 = timezone(timedelta(hours=7))
+
+def get_now_gmt7():
+    """Get current datetime in GMT+7 timezone"""
+    return datetime.now(GMT7)
 
 def get_admin_from_request(authorization: Optional[str] = None, db: Session = Depends(get_db)):
     """Get admin from authorization header"""
@@ -43,7 +50,12 @@ def get_admin_from_request(authorization: Optional[str] = None, db: Session = De
 def calculate_parking_cost(start_time: datetime, end_time: Optional[datetime] = None):
     """Calculate parking cost"""
     if not end_time:
-        end_time = datetime.utcnow()
+        end_time = get_now_gmt7()
+    # Ensure both times are timezone-aware
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=GMT7)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=GMT7)
     elapsed_ms = (end_time - start_time).total_seconds() * 1000
     hours = max(1, int((elapsed_ms / (60 * 60 * 1000)) + 0.99))  # Round up
     cost = FIRST_HOUR_RATE + max(0, hours - 1) * EXTRA_HOUR_RATE
@@ -92,27 +104,23 @@ def scan_qr(
         raise HTTPException(status_code=400, detail="qrToken dan action diperlukan")
     
     # Find booking by QR token
-    # For now, we'll search by booking ID in the token
-    # In production, store QR token in booking table
-    try:
-        # Extract booking ID from token (format: "B-123" or similar)
-        # For demo, we'll search all pending/checked-in bookings
-        bookings = db.query(models.Booking).filter(
-            models.Booking.status.in_(["pending", "checked-in"])
-        ).all()
-        
-        booking = None
-        for b in bookings:
-            # Simple matching - in production, store QR token in database
-            booking_id_str = f"B-{b.id_booking}"
-            if qr_token in booking_id_str or booking_id_str in qr_token:
-                booking = b
-                break
-        
-        if not booking:
-            raise HTTPException(status_code=404, detail="QR tidak ditemukan")
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="QR tidak ditemukan")
+    booking = db.query(models.Booking).filter(
+        models.Booking.qr_token == qr_token,
+        models.Booking.status.in_(["pending", "checked-in"])
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="QR tidak ditemukan atau sudah tidak valid")
+    
+    # Check if QR token expired
+    now = get_now_gmt7()
+    if booking.qr_expires_at:
+        if booking.qr_expires_at.tzinfo is None:
+            qr_expires_at_aware = booking.qr_expires_at.replace(tzinfo=GMT7)
+        else:
+            qr_expires_at_aware = booking.qr_expires_at
+        if qr_expires_at_aware < now:
+            raise HTTPException(status_code=400, detail="QR code sudah kadaluarsa")
     
     if action == "enter":
         if booking.status == "checked-in":
@@ -120,7 +128,7 @@ def scan_qr(
         
         # Mark as checked-in
         booking.status = "checked-in"
-        booking.waktu_masuk = datetime.utcnow()
+        booking.waktu_masuk = get_now_gmt7()
         
         # Mark slot as confirmed
         slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
@@ -157,7 +165,7 @@ def scan_qr(
         
         # Update booking
         booking.status = "completed"
-        booking.waktu_keluar = datetime.utcnow()
+        booking.waktu_keluar = get_now_gmt7()
         
         # Free up slot
         slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
@@ -183,7 +191,8 @@ def get_reports(
     get_admin_from_request(authorization, db)
     
     # Calculate today's date range
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    now = get_now_gmt7()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
     
     # Get today's completed bookings
@@ -212,7 +221,7 @@ def get_reports(
             today_exits += 1
     
     # Calculate month revenue
-    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     month_bookings = db.query(models.Booking).filter(
         models.Booking.status == "completed",
         models.Booking.waktu_keluar >= month_start

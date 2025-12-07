@@ -4,10 +4,11 @@ from backend.routers import database_op, hardware, auth, parking, wallet, admin
 
 app = FastAPI()
 
-# CORS Configuration
+# CORS Configuration - Allow all origins for cross-device access
+# In production, restrict to specific domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5001", "http://localhost:3000", "http://127.0.0.1:5001", "http://localhost:8000"],
+    allow_origins=["*"],  # Allow all origins for development/cross-device access
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

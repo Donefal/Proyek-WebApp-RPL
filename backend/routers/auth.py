@@ -21,9 +21,16 @@ def create_access_token(user_id: int) -> str:
 def register(user_data: schemas.RegisterRequest, db: Session = Depends(get_db)):
     """
     Register new customer
-    Expected: {name, email, password}
+    Expected: {name, email, password, notelp}
     """
     try:
+        # Validate password length (minimum 8 characters)
+        if len(user_data.password) < 8:
+            raise HTTPException(
+                status_code=400,
+                detail="Password harus minimal 8 karakter"
+            )
+        
         # Check if email already exists
         existing_customer = db.query(models.Customer).filter(
             models.Customer.email == user_data.email
@@ -35,15 +42,17 @@ def register(user_data: schemas.RegisterRequest, db: Session = Depends(get_db)):
                 detail="Email sudah terdaftar"
             )
         
+        # Hash password (simple hash for demo - use bcrypt in production)
+        password_hash = hashlib.sha256(user_data.password.encode()).hexdigest()
+        
         # Create new customer
         new_customer = models.Customer(
             username=user_data.name,
             email=user_data.email,
-            notelp="",  # Default, bisa diupdate nanti
+            password=password_hash,
+            notelp=user_data.notelp,
             saldo=0
         )
-        # Note: Untuk production, password harus di-hash dan disimpan di tabel terpisah
-        # Untuk sekarang, kita skip password karena model Customer tidak punya field password
         
         db.add(new_customer)
         db.commit()
@@ -69,18 +78,52 @@ def register(user_data: schemas.RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/auth/login")
 def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
     """
-    Login user
+    Login user (customer or admin)
     Expected: {email, password}
     """
     try:
-        # Find customer by email
+        # Hash the provided password
+        password_hash = hashlib.sha256(credentials.password.encode()).hexdigest()
+        
+        # First, try to find as admin
+        admin = db.query(models.Admin).filter(
+            models.Admin.email == credentials.email
+        ).first()
+        
+        if admin:
+            # Verify admin password (support both hashed and plain text for backward compatibility)
+            # In production, always use hashed passwords
+            if admin.password:
+                # Check if password matches (hashed or plain text)
+                if admin.password == password_hash or admin.password == credentials.password:
+                    token = create_access_token(admin.id_admin)
+                    return {
+                        "token": token,
+                        "user": {
+                            "id": str(admin.id_admin),
+                            "name": admin.username,
+                            "email": admin.email,
+                            "role": "admin"
+                        }
+                    }
+            raise HTTPException(
+                status_code=401,
+                detail="Email atau password salah"
+            )
+        
+        # If not admin, try to find as customer
         customer = db.query(models.Customer).filter(
             models.Customer.email == credentials.email
         ).first()
         
-        # For demo: accept any password if customer exists
-        # In production, verify password hash
         if not customer:
+            raise HTTPException(
+                status_code=401,
+                detail="Email atau password salah"
+            )
+        
+        # Verify customer password
+        if customer.password and customer.password != password_hash:
             raise HTTPException(
                 status_code=401,
                 detail="Email atau password salah"

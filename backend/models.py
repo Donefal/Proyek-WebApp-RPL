@@ -1,7 +1,15 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
+from datetime import timezone, timedelta
 from backend.database import Base
+
+# GMT+7 timezone
+GMT7 = timezone(timedelta(hours=7))
+
+def get_now_gmt7():
+    """Get current datetime in GMT+7 timezone"""
+    return datetime.datetime.now(GMT7)
 
 
 # ================================
@@ -86,11 +94,13 @@ class Booking(Base):
     id_parkir = Column(Integer, ForeignKey("mikrokontroler.id_mikrokontroler"))
     id_customer = Column(Integer, ForeignKey("customer.id_customer"))
 
-    waktu_booking = Column(DateTime, default=datetime.datetime.utcnow)
+    waktu_booking = Column(DateTime, default=get_now_gmt7)
     waktu_masuk = Column(DateTime, nullable=True)
     waktu_keluar = Column(DateTime, nullable=True)
 
     status = Column(String(20), default="pending")
+    qr_token = Column(String(255), nullable=True)  # Store QR token
+    qr_expires_at = Column(DateTime, nullable=True)  # QR expiration time
 
     # Relasi
     customer = relationship("Customer")

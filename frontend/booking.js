@@ -1,5 +1,15 @@
 // Booking page specific logic
-const API_BASE_URL = "http://localhost:8000";
+// Dynamic API URL - use current hostname for cross-device access
+const getApiBaseUrl = () => {
+  const hostname = window.location.hostname;
+  // If accessing from localhost, use localhost:8000
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  // Otherwise, use the same hostname with port 8000
+  return `http://${hostname}:8000`;
+};
+const API_BASE_URL = getApiBaseUrl();
 const STORAGE_KEY = "ParkinglySession";
 
 // Hanya izinkan slot nomor 1 dan 2 untuk bisa dibooking
@@ -161,11 +171,64 @@ function showActiveBooking(booking) {
   bookingElements.bookingFields.bookingId.textContent = booking.id;
   bookingElements.bookingFields.status.textContent =
     booking.status === "pending" ? "Menunggu validasi" : "Sedang parkir";
-  bookingElements.bookingFields.qrCode.textContent = booking.qr.token;
-  bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+  
+  // Show QR code for pending and checked-in status
+  if ((booking.status === "pending" || booking.status === "checked-in") && booking.qr && booking.qr.token) {
+    bookingElements.bookingFields.qrCode.textContent = booking.qr.token;
+    
+    // Generate QR code image
+    if (bookingElements.qrBox && typeof QRCode !== 'undefined') {
+      bookingElements.qrBox.innerHTML = "";
+      QRCode.toCanvas(bookingElements.qrBox, booking.qr.token, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }, function (error) {
+        if (error) {
+          console.error("QR Code generation error:", error);
+          bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+        }
+      });
+    } else {
+      // Fallback if QRCode library not loaded
+      bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+      // Try to load QRCode library dynamically
+      if (typeof QRCode === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        script.onload = function() {
+          if (bookingElements.qrBox && booking.qr && booking.qr.token && (booking.status === "pending" || booking.status === "checked-in")) {
+            bookingElements.qrBox.innerHTML = "";
+            QRCode.toCanvas(bookingElements.qrBox, booking.qr.token, {
+              width: 200,
+              margin: 2,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            });
+          }
+        };
+        document.head.appendChild(script);
+      }
+    }
+  } else {
+    // Hide QR code for checked-in or completed status
+    if (bookingElements.qrBox) {
+      bookingElements.qrBox.innerHTML = "";
+      bookingElements.qrBox.textContent = booking.status === "checked-in" ? "QR tidak diperlukan (sudah masuk)" : "QR tidak tersedia";
+    }
+    if (bookingElements.bookingFields.qrCode) {
+      bookingElements.bookingFields.qrCode.textContent = "-";
+    }
+  }
+  
   bookingElements.qrExpiredHint.classList.add("hidden");
   
-  updateTimeline(booking.status, booking.qr.token);
+  updateTimeline(booking.status, booking.qr ? booking.qr.token : null);
   
   const isCheckedIn = booking.status === "checked-in";
   if (bookingElements.cancelBooking) {
@@ -174,7 +237,7 @@ function showActiveBooking(booking) {
   
   if (isCheckedIn) {
     startDurationTimer(booking.startTime);
-  } else {
+  } else if (booking.qr && booking.qr.expiresAt) {
     startCountdown(booking.qr.expiresAt);
   }
 }
@@ -191,16 +254,48 @@ function hideActiveBooking() {
 function startCountdown(expiry) {
   clearCountdown();
   clearDurationTimer();
+  
   function tick() {
     const diff = new Date(expiry).getTime() - Date.now();
     if (diff <= 0) {
+      // Time expired - auto cancel booking
       bookingElements.qrExpiredHint.classList.remove("hidden");
+      bookingElements.qrExpiredHint.textContent = "⚠️ QR kadaluarsa, booking otomatis dibatalkan.";
       clearCountdown();
+      
+      // Auto cancel booking
+      cancelExpiredBooking();
       return;
     }
+    
+    // Update countdown display
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    const countdownText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Update countdown in UI if element exists
+    const countdownElement = document.querySelector("[data-field='countdown']");
+    if (countdownElement) {
+      countdownElement.textContent = `Waktu tersisa: ${countdownText}`;
+    }
   }
+  
   tick();
   bookingState.countdownInterval = setInterval(tick, 1000);
+}
+
+async function cancelExpiredBooking() {
+  try {
+    await apiFetch("/parking/cancel", {
+      method: "POST",
+    });
+    // Reload page or show message
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 2000);
+  } catch (err) {
+    console.error("Error canceling expired booking:", err);
+  }
 }
 
 function clearCountdown() {
@@ -328,6 +423,8 @@ if (bookingElements.bookingForm) {
       });
       showActiveBooking(data.booking);
       sessionStorage.removeItem("selectedSpot");
+      // Reload history to include new booking
+      // Note: This will be handled by index.html when user navigates back
     } catch (err) {
       alert(err.message);
     }
