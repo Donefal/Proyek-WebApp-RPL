@@ -1,7 +1,7 @@
 {
-  "name": "smart-parking-portal",
+  "name": "parkingly-portal",
   "version": "1.0.0",
-  "description": "Prototype backend for Smart Parking frontend",
+  "description": "Prototype backend for Parkingly frontend",
   "main": "server.js",
   "scripts": {
     "dev": "node server.js"

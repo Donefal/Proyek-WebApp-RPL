@@ -1,5 +1,5 @@
 const API_BASE_URL = "http://localhost:8000";
-const STORAGE_KEY = "smartParkingSession";
+const STORAGE_KEY = "ParkinglySession";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");

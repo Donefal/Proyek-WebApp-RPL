@@ -1,5 +1,5 @@
 const API_BASE_URL = "http://localhost:8000";
-const STORAGE_KEY = "smartParkingSession";
+const STORAGE_KEY = "ParkinglySession";
 const PRICING = {
   firstHour: 10000,
   extraHour: 5000,
