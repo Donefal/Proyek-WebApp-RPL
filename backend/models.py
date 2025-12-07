@@ -12,6 +12,7 @@ class Customer(Base):
 
     id_customer = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
+    password = Column(String(100))
     email = Column(String(100), unique=True)
     notelp = Column(String (16))     
     saldo = Column(Integer)
@@ -70,6 +71,7 @@ class Admin(Base):
 
     id_admin = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
+    password = Column(String(100))
     email = Column(String(100), unique=True)
     notelp = Column(String(16))
 

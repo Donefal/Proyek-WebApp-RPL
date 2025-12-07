@@ -9,6 +9,7 @@ from typing import Optional, List
 
 class CustomerBase(BaseModel):
     username: str
+    password: str
     email: str
     notelp: str
     saldo: Optional[int] = 0
@@ -46,6 +47,7 @@ class LoginRequest(BaseModel):
 
 class AdminBase(BaseModel):
     username: str
+    password: str
     email: str
     notelp: str
 
