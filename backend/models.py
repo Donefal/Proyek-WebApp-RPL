@@ -92,7 +92,7 @@ class Booking(Base):
 
     id_booking = Column(Integer, primary_key=True, index=True)
     
-    id_parkir = Column(Integer, ForeignKey("mikrokontroler.id_mikrokontroler"))
+    id_parkir = Column(Integer, ForeignKey("slot_condition.id_slot"))
     id_customer = Column(Integer, ForeignKey("customer.id_customer"))
 
     waktu_booking = Column(DateTime, default=get_now_gmt7)
@@ -105,4 +105,4 @@ class Booking(Base):
 
     # Relasi
     customer = relationship("Customer")
-    parkir = relationship("Mikrokontroler")
+    parkir = relationship("Slot")
