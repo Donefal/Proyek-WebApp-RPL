@@ -90,9 +90,10 @@ def get_spots(
     for slot in slots:
         # Check if slot is booked
         is_booked = slot.booked
-        is_occupied = slot.occupied
-        is_available = not is_booked and not is_occupied
-        
+       # is_occupied = slot.occupied --disable occupied
+       # is_available = not is_booked and not is_occupied
+        is_available = not is_booked
+
         # Get mikrokontroler info
         mikrokontroler = db.query(models.Mikrokontroler).filter(
             models.Mikrokontroler.id_mikrokontroler == slot.id_mikrokontroler
