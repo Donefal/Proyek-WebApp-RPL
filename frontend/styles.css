@@ -641,7 +641,7 @@ button.ghost {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.refresh-btn:hover .refresh-icon {
+.refresh-btn.refreshing .refresh-icon {
   animation: rotateRefresh 0.6s ease;
 }
 
@@ -2004,7 +2004,7 @@ td {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.refresh-history-btn:hover .refresh-icon {
+.refresh-history-btn.refreshing .refresh-icon {
   animation: rotateRefresh 0.6s ease;
 }
 
@@ -2533,7 +2533,7 @@ td {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.admin-refresh-btn:hover .refresh-icon {
+.admin-refresh-btn.refreshing .refresh-icon {
   animation: rotateRefresh 0.6s ease;
 }
 

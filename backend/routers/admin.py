@@ -137,8 +137,17 @@ def scan_qr(
         if slot:
             slot.confirmed = True
         
+        # Update aktuator kondisi_buka untuk gate masuk (idGate: 1)
+        aktuator = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == 1).first()
+        if aktuator:
+            aktuator.kondisi_buka = True
+        
         db.commit()
-        return {"message": "Masuk dikonfirmasi admin"}
+        return {
+            "message": "Masuk Dikonfirmasi Admin",
+            "idGate": 1,
+            "kondisi_buka": True
+        }
     
     elif action == "exit":
         if booking.status != "checked-in":
@@ -176,8 +185,17 @@ def scan_qr(
             slot.occupied = False
             slot.confirmed = False
         
+        # Update aktuator kondisi_buka untuk gate keluar (idGate: 2)
+        aktuator = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == 2).first()
+        if aktuator:
+            aktuator.kondisi_buka = True
+        
         db.commit()
-        return {"message": "Keluar dikonfirmasi admin"}
+        return {
+            "message": "Keluar Dikonfirmasi Admin",
+            "idGate": 2,
+            "kondisi_buka": True
+        }
     
     else:
         raise HTTPException(status_code=400, detail="Aksi tidak dikenal")

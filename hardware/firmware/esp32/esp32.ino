@@ -6,14 +6,14 @@
   // =======================
   // WiFi Credentials
   // =======================
-  const char* ssid = "Edu_Robotics";
-  const char* password = "labrobot21";
+  const char* ssid = "DihKoqAku";
+  const char* password = "BocilTuyul30";
 
   // =======================
   // API Endpoints
   // =======================
-  String GET_URL = "http://192.168.1.117:8000/hw/instruction";
-  String POST_URL = "http://192.168.1.117:8000/hw/update";
+  String GET_URL = "http://192.168.10.114:8000/hw/instruction";
+  String POST_URL = "http://192.168.10.114:8000/hw/update";
 
   // =======================
   // Structs
@@ -26,6 +26,7 @@
   struct Buzzer {
     int pin;
   };
+
 
   // =======================
   // Constants
@@ -44,6 +45,12 @@
 
   const int ENTER_GATE_PIN = 23;
   const int EXIT_GATE_PIN  = 22;
+
+  const int ENTER_OPEN = 90;
+  const int ENTER_CLOSE = 180;
+  
+  const int EXIT_OPEN = 0;
+  const int EXIT_CLOSE = 90;
 
   // Buzzers
   const Buzzer BUZZERS[AMOUNT_OF_SLOTS] = {
@@ -149,13 +156,17 @@
   // =======================
   // Gate Control
   // =======================
-  void openGate(Servo &gate) {
-      gate.write(90);
+  void openGate(Servo &gate, int open, int close) {
+      gate.write(open);
       unsigned long start = millis();
       while (millis() - start < 2000) {
           delay(10);   // let WiFi run
       }
-      gate.write(0);
+      gate.write(close);
+  }
+
+  void closeGate(Servo &gate, int close) {
+      gate.write(close);
   }
 
 
@@ -234,22 +245,31 @@
 
         Serial.printf("Gate: %d %d \n", id, buka);
 
+        int indexGate = id - 1;
         if (buka) {
-          int indexGate = id - 1;
-
           if (indexGate == 0) {
             Serial.println("Enter Gate tried to open");
-            openGate(enterGate);
+            openGate(enterGate, ENTER_OPEN, ENTER_CLOSE);
           }
           else if (indexGate == 1) {
             Serial.println("Exit Gate tried to open");
-            openGate(exitGate);
+            openGate(exitGate, EXIT_OPEN, EXIT_CLOSE);
           }
           else {
             Serial.print("Invalid gate actuator: ");
             Serial.println(id);
           }
-          delay(2000);
+        } else {
+          if (indexGate == 0) {
+            closeGate(enterGate, ENTER_CLOSE);
+          }
+          else if (indexGate == 1) {
+            closeGate(enterGate, ENTER_CLOSE);
+          }
+          else {
+            Serial.print("Invalid gate actuator: ");
+            Serial.println(id);
+          }
         }
       }
     }

@@ -106,7 +106,9 @@ async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, config);
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error.message || "Request failed");
+    // Handle both FastAPI (detail) and Express (message) error formats
+    const errorMessage = error.detail || error.message || "Request failed";
+    throw new Error(errorMessage);
   }
   return res.json();
 }
@@ -891,9 +893,32 @@ elements.logoutBtn.addEventListener("click", () => {
   window.location.href = "login.html";
 });
 
-elements.refreshSpots.addEventListener("click", loadSpots);
-elements.adminRefreshSpots.addEventListener("click", loadAdminSpots);
-elements.refreshHistory.addEventListener("click", loadHistory);
+elements.refreshSpots.addEventListener("click", () => {
+  elements.refreshSpots.classList.add("refreshing");
+  loadSpots().finally(() => {
+    setTimeout(() => {
+      elements.refreshSpots.classList.remove("refreshing");
+    }, 600); // Remove after animation completes
+  });
+});
+
+elements.adminRefreshSpots.addEventListener("click", () => {
+  elements.adminRefreshSpots.classList.add("refreshing");
+  loadAdminSpots().finally(() => {
+    setTimeout(() => {
+      elements.adminRefreshSpots.classList.remove("refreshing");
+    }, 600); // Remove after animation completes
+  });
+});
+
+elements.refreshHistory.addEventListener("click", () => {
+  elements.refreshHistory.classList.add("refreshing");
+  loadHistory().finally(() => {
+    setTimeout(() => {
+      elements.refreshHistory.classList.remove("refreshing");
+    }, 600); // Remove after animation completes
+  });
+});
 
 // Redirect to booking page instead of inline booking
 if (elements.goToBooking) {

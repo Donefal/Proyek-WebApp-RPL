@@ -32,7 +32,6 @@ async def update_from_esp32(data: schemas.FromESP32, db: Session = Depends(get_d
 # ============================
 @router.get("/instruction", response_model=schemas.ToESP32)
 def send_instruction_to_esp32(db: Session = Depends(get_db)):
-    # TODO: Testing data
     db_slots = db.query(models.Slot).all()
     slots = [
         schemas.SlotData(
@@ -48,7 +47,7 @@ def send_instruction_to_esp32(db: Session = Depends(get_db)):
     gates = [
         schemas.GateData(
             id_aktuator= gate.id_aktuator,
-            buka= True # TODO: Ini harus sesuai dengan kondisi sesungguhnya
+            buka= gate.kondisi_buka  # Mengambil kondisi_buka dari database
         )
         for gate in db_gates
     ]
