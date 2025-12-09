@@ -241,6 +241,13 @@ app.post("/api/admin/scan", ensureRole("admin"), (req, res) => {
     booking.startTime = new Date().toISOString();
     reports.todayEntries += 1;
     return res.json({ message: "Masuk dikonfirmasi admin" });
+
+    /* Json {
+      msessage: "Masuk dikonfirmasi admin",
+      idGate: 1,
+      kondisi_buka: true
+    }
+    */
   }
   if (action === "exit") {
     if (booking.status !== "checked-in") {
@@ -271,6 +278,12 @@ app.post("/api/admin/scan", ensureRole("admin"), (req, res) => {
     reports.monthRevenue += total;
     reports.todayExits += 1;
     return res.json({ message: "Keluar dikonfirmasi admin" });
+    /* Json {
+      msessage: "Keluar dikonfirmasi admin",
+      idGate: 2,
+      kondisi_buka: true
+    }
+    */
   }
   res.status(400).json({ message: "Aksi tidak dikenal" });
 });
