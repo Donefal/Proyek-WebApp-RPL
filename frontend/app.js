@@ -79,6 +79,7 @@ const elements = {
   heroSlots: document.getElementById("heroSlots"),
   goToBooking: document.getElementById("goToBooking"),
   goToBookingSelected: document.getElementById("goToBookingSelected"),
+  goToBookingPageBtn: document.getElementById("goToBookingPageBtn"),
   selectedSlotInfo: document.getElementById("selectedSlotInfo"),
 };
 
@@ -545,52 +546,77 @@ function showBookingPanel(booking) {
     startCountdown(booking.qr.expiresAt);
   }
   
+
+//===============================================================================================
+
+
   // Show button to go to booking page (for pending and checked-in status)
   if (booking.status === "pending" || booking.status === "checked-in") {
-    showGoToBookingButton();
+    //showGoToBookingButton();
+    
+    btn.style.display = "inline-block";
+
+    const btn = elements.goToBookingPageBtn || document.getElementById("goToBookingPageBtn");
+    if (!btn) return; // button not present in DOM — nothing to do
+
+    // Ensure a click handler exists (idempotent)
+    if (!btn.hasAttribute("data-listener-added")) {
+      btn.addEventListener("click", () => {
+        // optional: persist selected booking or state if needed
+        window.location.href = "booking.html";
+      });
+      btn.setAttribute("data-listener-added", "true");
+    }
+
+    // Only show when there is an active booking in pending/checked-in
+    // if (state.activeBooking && (state.activeBooking.status === "pending" || state.activeBooking.status === "checked-in")) {
+    //   btn.style.display = "inline-block";
+    // } else {
+    //   btn.style.display = "none";
+    // }
+
+
   } else {
-    hideGoToBookingButton();
+    //hideGoToBookingButton();
+
+
+    const btn = elements.goToBookingPageBtn || document.getElementById("goToBookingPageBtn");
+    if (!btn) return;
+   // btn.style.display = "none";
+
+
   }
 }
 
 function showGoToBookingButton() {
-  // Show button if we're on the map view and have an active booking (pending or checked-in)
-  const spotHeader = document.querySelector(".spot-header");
-  if (spotHeader && state.activeBooking && (state.activeBooking.status === "pending" || state.activeBooking.status === "checked-in")) {
-    // Use existing button from HTML or create if doesn't exist
-    let goToBookingBtn = document.getElementById("goToBookingPageBtn");
-    if (!goToBookingBtn) {
-      goToBookingBtn = document.createElement("button");
-      goToBookingBtn.id = "goToBookingPageBtn";
-      goToBookingBtn.className = "booking-btn";
-      goToBookingBtn.innerHTML = "📋 Lihat Booking";
-      goToBookingBtn.style.marginLeft = "0.5rem";
-      spotHeader.appendChild(goToBookingBtn);
-    }
-    // Add click event listener if not already added
-    if (!goToBookingBtn.hasAttribute("data-listener-added")) {
-      goToBookingBtn.addEventListener("click", () => {
-        window.location.href = "booking.html";
-      });
-      goToBookingBtn.setAttribute("data-listener-added", "true");
-    }
-    goToBookingBtn.style.display = "block";
-  }
+  // const btn = elements.goToBookingPageBtn || document.getElementById("goToBookingPageBtn");
+  // if (!btn) return; // button not present in DOM — nothing to do
+
+  // // Ensure a click handler exists (idempotent)
+  // if (!btn.hasAttribute("data-listener-added")) {
+  //   btn.addEventListener("click", () => {
+  //     // optional: persist selected booking or state if needed
+  //     window.location.href = "booking.html";
+  //   });
+  //   btn.setAttribute("data-listener-added", "true");
+  // }
+
+  // // Only show when there is an active booking in pending/checked-in
+  // if (state.activeBooking && (state.activeBooking.status === "pending" || state.activeBooking.status === "checked-in")) {
+  //   btn.style.display = "inline-block";
+  // } else {
+  //   btn.style.display = "none";
+  // }
 }
 
 function hideGoToBookingButton() {
-  const goToBookingBtn = document.getElementById("goToBookingPageBtn");
-  if (goToBookingBtn) {
-    goToBookingBtn.style.display = "none";
-  }
-  // Also hide if no active booking or booking is completed
-  if (!state.activeBooking || (state.activeBooking.status !== "pending" && state.activeBooking.status !== "checked-in")) {
-    const btn = document.getElementById("goToBookingPageBtn");
-    if (btn) {
-      btn.style.display = "none";
-    }
-  }
+  // const btn = elements.goToBookingPageBtn || document.getElementById("goToBookingPageBtn");
+  // if (!btn) return;
+  // btn.style.display = "none";
 }
+
+
+//===============================================================================================
 
 function hideBookingPanel() {
   state.activeBooking = null;
@@ -898,6 +924,17 @@ if (elements.goToBookingSelected) {
     sessionStorage.setItem("selectedSpot", JSON.stringify(state.selectedSpot));
     window.location.href = "booking.html";
   });
+}
+
+if (elements.goToBookingPageBtn) {
+  if (!elements.goToBookingPageBtn.hasAttribute("data-listener-added")) {
+    elements.goToBookingPageBtn.addEventListener("click", () => {
+      window.location.href = "booking.html";
+    });
+    elements.goToBookingPageBtn.setAttribute("data-listener-added", "true");
+  }
+  // keep it hidden by default; visibility will be controlled by show/hide functions
+  //elements.goToBookingPageBtn.style.display = "block";
 }
 
 // Keep old booking form for backward compatibility (if exists)
