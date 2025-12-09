@@ -1,0 +1,207 @@
+- perubahan ke 1
+
+Ringkasan perubahan
+1. Nomor telepon pada halaman register
+Backend: Menambahkan field notelp pada RegisterRequest di schemas.py
+Backend: Memperbarui endpoint register untuk menyimpan nomor telepon
+Frontend: Menambahkan input nomor telepon di register.html
+Frontend: Memperbarui auth.js untuk mengirim nomor telepon
+2. Validasi password minimal 8 karakter
+Backend: Validasi panjang password minimal 8 karakter di endpoint register
+Frontend: Menambahkan atribut minlength="8" pada input password
+Frontend: Validasi client-side di auth.js
+Backend: Password di-hash menggunakan SHA256 sebelum disimpan
+3. QR code visual dan scan kamera untuk admin
+Frontend: Menambahkan library QRCode.js (CDN) untuk generate QR code visual
+Frontend: Memperbarui booking.js dan app.js untuk menampilkan QR code sebagai gambar
+Frontend: Menambahkan fitur scan kamera untuk admin menggunakan jsQR library
+Frontend: Menambahkan tombol "Buka Kamera untuk Scan QR" di halaman admin
+Frontend: Auto-fill token QR setelah berhasil di-scan
+4. Tombol kembali ke halaman booking dari homepage
+Frontend: Menambahkan fungsi showGoToBookingButton() yang menampilkan tombol "Lihat Booking" saat ada booking aktif
+Frontend: Tombol muncul di header map view dan mengarahkan ke booking.html
+5. Pemisahan login admin dan customer
+Backend: Memperbarui endpoint login untuk memeriksa admin terlebih dahulu, lalu customer
+Backend: Admin login dari tabel admin di database
+Backend: Customer login dari tabel customer (yang dibuat melalui registrasi)
+Backend: Password admin mendukung hashed (SHA256) dan plain text (untuk backward compatibility)
+Backend: Password customer selalu di-hash saat registrasi
+Backend: Response login mengembalikan role ("admin" atau "user")
+Catatan penting
+Password admin: Saat membuat admin langsung di database, hash password dengan SHA256 agar konsisten. Atau gunakan plain text (untuk backward compatibility).
+QR code: Menggunakan library QRCode.js via CDN. Pastikan koneksi internet tersedia.
+Kamera: Fitur scan QR memerlukan izin kamera dari browser. Pastikan browser mendukung getUserMedia.
+Semua perubahan telah diimplementasikan dan siap digunakan.
+
+
+- perubahan Ke-2
+
+Ringkasan perbaikan
+1. Token QR code tidak bisa divalidasi oleh admin — diperbaiki
+Backend: Menambahkan field qr_token dan qr_expires_at pada model Booking
+Backend: Menyimpan QR token ke database saat booking dibuat
+Backend: Memperbarui endpoint /admin/scan untuk mencari booking berdasarkan qr_token yang tersimpan
+Backend: Menambahkan validasi expired QR token di endpoint scan
+2. Error "QRCode is not defined" dan visual QR code tidak muncul — diperbaiki
+Frontend: Menambahkan fallback jika library QRCode belum dimuat
+Frontend: Menambahkan dynamic loading library QRCode jika belum tersedia
+Frontend: Memperbaiki pengecekan booking.qr sebelum mengakses token
+Frontend: Menambahkan error handling untuk generate QR code
+3. Countdown 30 menit dan auto cancel — ditambahkan
+Frontend: Memperbarui fungsi startCountdown() untuk menampilkan countdown (MM:SS)
+Frontend: Menambahkan auto cancel booking saat countdown habis
+Frontend: Menambahkan fungsi cancelExpiredBooking() untuk membatalkan booking otomatis
+Frontend: Menampilkan pesan "QR kadaluarsa, booking otomatis dibatalkan" saat expired
+Backend: Auto cancel booking yang expired saat fetch active booking
+4. Tombol balik ke halaman booking muncul sejak pending — diperbaiki
+Frontend: Memperbarui showGoToBookingButton() untuk hanya muncul saat status "pending"
+Frontend: Memperbarui showBookingPanel() untuk memanggil showGoToBookingButton() hanya saat status pending
+Catatan penting
+Database migration: Karena menambahkan field baru (qr_token, qr_expires_at) pada tabel booking, perlu:
+Menjalankan migration database, atau
+Menghapus dan membuat ulang tabel booking (untuk development)
+QR token: Token sekarang disimpan di database dan dapat divalidasi oleh admin dengan benar.
+Auto cancel: Booking akan otomatis dibatalkan jika QR code expired (30 menit) dan slot akan dibebaskan.
+Countdown: Menampilkan waktu tersisa dalam format MM:SS dan update setiap detik.
+Semua perubahan sudah diimplementasikan dan siap digunakan.
+
+
+- perubahan ke-3
+
+Ringkasan perbaikan
+1. Timezone GMT+7 — diperbaiki
+Backend: Menambahkan helper function get_now_gmt7() di parking.py, admin.py, dan models.py
+Backend: Mengganti semua datetime.utcnow() dengan get_now_gmt7()
+Backend: Memperbaiki default waktu_booking di model Booking untuk menggunakan GMT+7
+Backend: Memperbaiki perbandingan waktu expired dengan timezone-aware datetime
+Backend: Memperbaiki fungsi calculate_parking_cost() untuk menangani timezone dengan benar
+2. Validasi expired booking — diperbaiki
+Backend: Memperbaiki validasi expired booking di /parking/active dengan timezone-aware comparison
+Backend: Memastikan qr_expires_at dibandingkan dengan benar menggunakan GMT+7
+Backend: Memperbaiki validasi expired di endpoint /admin/scan
+3. Pop-up alert diganti dengan error message di form — diperbaiki
+Frontend: Menambahkan elemen error message di bawah setiap input field di login.html dan register.html
+Frontend: Menambahkan fungsi showError() dan clearError() di auth.js
+Frontend: Mengganti semua alert() dengan showError() untuk menampilkan error di form
+Frontend: Menambahkan event listener untuk clear error saat user mengetik
+Frontend: Menambahkan styling border merah pada input yang error
+4. Pop-up "register berhasil" dihilangkan — diperbaiki
+Frontend: Menghapus alert("Registrasi berhasil. Silakan login.") dari auth.js
+Frontend: Langsung redirect ke login.html setelah registrasi berhasil
+Catatan penting
+Database: Waktu yang tersimpan di database sekarang menggunakan GMT+7 (WIB). Data lama mungkin masih menggunakan UTC, tetapi perbandingan waktu sudah menggunakan GMT+7.
+Timezone handling: Semua datetime operations sekarang menggunakan GMT+7, termasuk:
+Waktu booking dibuat
+QR token expiration
+Waktu masuk/keluar
+Perhitungan biaya parkir
+Error messages: Error ditampilkan langsung di form, bukan pop-up, untuk UX yang lebih baik.
+Auto-clear errors: Error message otomatis hilang saat user mulai mengetik di field tersebut.
+Semua perubahan sudah diimplementasikan dan siap digunakan.
+
+
+
+- perubahan ke 4
+
+Ringkasan perbaikan
+1. Tombol kembali ke booking hanya muncul saat pending — diperbaiki
+Frontend: Memperbarui showGoToBookingButton() agar hanya muncul saat status "pending"
+Frontend: Memperbarui hideGoToBookingButton() untuk menyembunyikan tombol saat tidak ada booking atau status bukan pending
+Frontend: Memperbarui loadActiveBooking() untuk memanggil hideGoToBookingButton() saat tidak ada booking aktif
+Frontend: Memperbarui showBookingPanel() untuk memanggil hideGoToBookingButton() saat status bukan pending
+2. QR code disembunyikan saat status checked-in — diperbaiki
+Frontend: Memperbarui showBookingPanel() di app.js untuk hanya menampilkan QR code saat status "pending"
+Frontend: Memperbarui showActiveBooking() di booking.js untuk hanya menampilkan QR code saat status "pending"
+Frontend: Menampilkan pesan "QR tidak diperlukan (sudah masuk)" saat status checked-in
+Backend: Memastikan endpoint /parking/active tidak mengembalikan QR code saat status checked-in (sudah benar)
+3. Failed to fetch dari device berbeda — diperbaiki
+Frontend: Mengubah API_BASE_URL menjadi dinamis menggunakan getApiBaseUrl() di app.js, auth.js, dan booking.js
+Frontend: Menggunakan window.location.hostname untuk menentukan URL API secara dinamis
+Frontend: Jika hostname adalah localhost atau 127.0.0.1, menggunakan http://localhost:8000
+Frontend: Jika hostname berbeda (device lain), menggunakan http://{hostname}:8000
+Backend: Memperbarui CORS untuk mengizinkan semua origin (allow_origins=["*"]) untuk akses lintas perangkat
+Penjelasan masalah "Failed to fetch" dari device berbeda
+Masalah terjadi karena:
+API URL hardcoded: API_BASE_URL di-set ke http://localhost:8000, yang hanya bisa diakses dari komputer yang sama.
+CORS terbatas: Backend hanya mengizinkan origin tertentu, sehingga request dari device lain ditolak.
+Solusi:
+Dynamic API URL: Menggunakan window.location.hostname untuk menentukan URL API berdasarkan hostname yang digunakan untuk mengakses frontend.
+Jika akses dari 192.168.1.100:5001, API akan menggunakan http://192.168.1.100:8000
+Jika akses dari localhost:5001, API akan menggunakan http://localhost:8000
+CORS diperluas: Mengizinkan semua origin untuk development (dapat dibatasi di production).
+Catatan penting:
+Pastikan backend berjalan dan dapat diakses dari network (bukan hanya localhost)
+Jika backend berjalan di 0.0.0.0:8000, akan dapat diakses dari device lain di network yang sama
+Pastikan firewall mengizinkan koneksi ke port 8000
+Untuk production, batasi CORS ke domain yang diizinkan
+Semua perubahan sudah diimplementasikan dan siap digunakan.
+
+
+- perubahan ke 5
+
+Ringkasan perbaikan
+1. Tombol kembali ke booking muncul dari pending hingga selesai — diperbaiki
+Frontend: Memperbarui showBookingPanel() untuk menampilkan tombol saat status "pending" atau "checked-in"
+Frontend: Memperbarui showGoToBookingButton() untuk menampilkan tombol saat status "pending" atau "checked-in"
+Frontend: Memperbarui hideGoToBookingButton() untuk menyembunyikan tombol hanya saat status "completed" atau tidak ada booking
+2. QR code tetap ditampilkan saat checked-in — diperbaiki
+Frontend: Memperbarui showBookingPanel() di app.js untuk menampilkan QR code saat status "pending" atau "checked-in"
+Frontend: Memperbarui showActiveBooking() di booking.js untuk menampilkan QR code saat status "pending" atau "checked-in"
+Backend: Memperbarui endpoint /parking/active untuk mengembalikan QR token saat status "checked-in" (untuk validasi keluar)
+Perubahan detail
+Frontend (app.js dan booking.js):
+QR code ditampilkan untuk status "pending" dan "checked-in"
+Tombol "Lihat Booking" muncul untuk status "pending" dan "checked-in"
+QR code disembunyikan hanya saat status "completed" atau "cancelled"
+Backend (parking.py):
+Endpoint /parking/active mengembalikan QR token saat status "checked-in" (jika ada)
+QR token tetap tersedia untuk validasi keluar
+Semua perubahan sudah diimplementasikan dan siap digunakan.
+
+- perubahan ke 6
+
+Ringkasan perbaikan
+1. Tombol kembali ke booking di halaman MAP — diperbaiki
+Frontend: Menambahkan tombol goToBookingPageBtn di HTML index.html (hidden by default)
+Frontend: Memperbarui showGoToBookingButton() untuk menggunakan tombol yang sudah ada di HTML
+Frontend: Tombol muncul saat ada booking dengan status "pending" atau "checked-in"
+Frontend: Tombol disembunyikan saat booking selesai atau tidak ada booking aktif
+2. Riwayat otomatis menampilkan semua status booking — diperbaiki
+Backend: Memperbarui endpoint /parking/history untuk mengembalikan semua status booking (pending, checked-in, cancelled, completed)
+Backend: Menambahkan field status dan statusDisplay pada response history
+Backend: Menghitung cost untuk checked-in bookings (estimated cost)
+Frontend: Memperbarui renderHistory() untuk menampilkan semua status dengan badge berbeda
+Frontend: Menambahkan CSS untuk status badge:
+status-badge-completed (hijau) - untuk status "Selesai"
+status-badge-pending (kuning) - untuk status "Menunggu"
+status-badge-checkedin (biru) - untuk status "Sedang Parkir"
+status-badge-cancelled (merah) - untuk status "Dibatalkan"
+Frontend: History di-reload otomatis setelah:
+Booking dibuat
+Booking dibatalkan
+Load active booking (setiap kali halaman dimuat)
+Detail perubahan
+Backend (parking.py):
+Endpoint /parking/history sekarang mengembalikan semua booking (tidak hanya completed)
+Menambahkan perhitungan cost untuk checked-in bookings
+Menambahkan field status dan statusDisplay pada response
+Frontend (app.js dan index.html):
+Tombol "Lihat Booking" ditambahkan di HTML dan dikontrol via JavaScript
+History menampilkan semua status dengan styling berbeda
+History di-reload otomatis setelah perubahan booking
+Frontend (styles.css):
+Menambahkan styling untuk status badge yang berbeda
+Semua perubahan sudah diimplementasikan dan siap digunakan.
+
+
+
+- karena kena limit berikut prompt yang akan ditambahkan
+
+karena tombol tidak muncul juga. jadi jangan hilangkan tombol kembali ke halaman booking-btn. tetap munculkan tapi ketika status booking pending atau checkin tidak bisa kehalaman booking. kemudian pada riwayat bisa menjadi tombol untuk kembali pada halaman booking yang sesuai dengan riwayat terseebut. 
+kemudian dapat melakukan auto refresh ketika qr sudah di validasi admin 
+
+
+- yang belum
+1. back to booking page
+2. auto refresh
+4. qr belum muncul bentuknya

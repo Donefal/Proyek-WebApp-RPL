@@ -9,6 +9,7 @@ from typing import Optional, List
 
 class CustomerBase(BaseModel):
     username: str
+    password: str
     email: str
     notelp: str
     saldo: Optional[int] = 0
@@ -33,6 +34,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
+    notelp: str
 
 
 class LoginRequest(BaseModel):
@@ -46,6 +48,7 @@ class LoginRequest(BaseModel):
 
 class AdminBase(BaseModel):
     username: str
+    password: str
     email: str
     notelp: str
 
@@ -104,6 +107,7 @@ class Aktuator(BaseModel):
     id_aktuator: int
     nama_aktuator: str
     usable: bool
+    kondisi_buka: bool
 
     class Config:
         from_attributes = True

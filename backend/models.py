@@ -1,7 +1,15 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 import datetime
+from datetime import timezone, timedelta
 from backend.database import Base
+
+# GMT+7 timezone
+GMT7 = timezone(timedelta(hours=7))
+
+def get_now_gmt7():
+    """Get current datetime in GMT+7 timezone"""
+    return datetime.datetime.now(GMT7)
 
 
 # ================================
@@ -12,6 +20,7 @@ class Customer(Base):
 
     id_customer = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
+    password = Column(String(100))
     email = Column(String(100), unique=True)
     notelp = Column(String (16))     
     saldo = Column(Integer)
@@ -56,6 +65,7 @@ class Aktuator(Base):
     id_aktuator = Column(Integer, primary_key=True, index=True)
     nama_aktuator = Column(String(100))
     usable = Column(Boolean)
+    kondisi_buka = Column(Boolean)
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
@@ -70,6 +80,7 @@ class Admin(Base):
 
     id_admin = Column(Integer, primary_key=True, index=True)
     username = Column(String(100), unique=True)
+    password = Column(String(100))
     email = Column(String(100), unique=True)
     notelp = Column(String(16))
 
@@ -81,15 +92,17 @@ class Booking(Base):
 
     id_booking = Column(Integer, primary_key=True, index=True)
     
-    id_parkir = Column(Integer, ForeignKey("mikrokontroler.id_mikrokontroler"))
+    id_parkir = Column(Integer, ForeignKey("slot_condition.id_slot"))
     id_customer = Column(Integer, ForeignKey("customer.id_customer"))
 
-    waktu_booking = Column(DateTime, default=datetime.datetime.utcnow)
+    waktu_booking = Column(DateTime, default=get_now_gmt7)
     waktu_masuk = Column(DateTime, nullable=True)
     waktu_keluar = Column(DateTime, nullable=True)
 
     status = Column(String(20), default="pending")
+    qr_token = Column(String(255), nullable=True)  # Store QR token
+    qr_expires_at = Column(DateTime, nullable=True)  # QR expiration time
 
     # Relasi
     customer = relationship("Customer")
-    parkir = relationship("Mikrokontroler")
+    parkir = relationship("Slot")

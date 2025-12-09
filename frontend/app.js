@@ -1,4 +1,16 @@
-const API_BASE_URL = "http://localhost:8000";
+// Dynamic API URL - use current hostname for cross-device access
+// For localhost development, use localhost:8000
+// For production or network access, use the server's IP/hostname
+const getApiBaseUrl = () => {
+  const hostname = window.location.hostname;
+  // If accessing from localhost, use localhost:8000
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  // Otherwise, use the same hostname with port 8000
+  return `http://${hostname}:8000`;
+};
+const API_BASE_URL = getApiBaseUrl();
 const STORAGE_KEY = "ParkinglySession";
 const PRICING = {
   firstHour: 10000,
@@ -383,7 +395,32 @@ function renderHistory(rows) {
     node.querySelector("[data-field='spot']").textContent = item.spotName;
     node.querySelector("[data-field='start']").textContent = formatDate(item.startTime);
     node.querySelector("[data-field='end']").textContent = formatDate(item.endTime);
-    node.querySelector("[data-field='cost']").textContent = formatCurrency(item.cost);
+    
+    // Format cost - show "-" if no cost (for pending/cancelled)
+    const costElement = node.querySelector("[data-field='cost']");
+    if (item.cost !== null && item.cost !== undefined) {
+      costElement.textContent = formatCurrency(item.cost);
+    } else {
+      costElement.textContent = "-";
+    }
+    
+    // Format status badge
+    const statusElement = node.querySelector("[data-field='status']");
+    const statusDisplay = item.statusDisplay || item.status || "Unknown";
+    statusElement.textContent = statusDisplay;
+    
+    // Add status-specific class
+    statusElement.className = "status-badge";
+    if (item.status === "completed") {
+      statusElement.classList.add("status-badge-completed");
+    } else if (item.status === "cancelled") {
+      statusElement.classList.add("status-badge-cancelled");
+    } else if (item.status === "checked-in") {
+      statusElement.classList.add("status-badge-checkedin");
+    } else if (item.status === "pending") {
+      statusElement.classList.add("status-badge-pending");
+    }
+    
     elements.historyTable.appendChild(node);
   });
 }
@@ -422,31 +459,148 @@ function setWalletBalance(amount) {
 
 function showBookingPanel(booking) {
   state.activeBooking = booking;
-  elements.activeBooking.classList.remove("hidden");
-  elements.bookingFields.bookingId.textContent = booking.id;
-  elements.bookingFields.status.textContent =
-    booking.status === "pending" ? "Menunggu validasi" : "Sedang parkir";
-  elements.bookingFields.qrCode.textContent = booking.qr.token;
-  elements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
-  elements.qrExpiredHint.classList.add("hidden");
+  if (elements.activeBooking) {
+    elements.activeBooking.classList.remove("hidden");
+  }
+  if (elements.bookingFields.bookingId) {
+    elements.bookingFields.bookingId.textContent = booking.id;
+  }
+  if (elements.bookingFields.status) {
+    elements.bookingFields.status.textContent =
+      booking.status === "pending" ? "Menunggu validasi" : "Sedang parkir";
+  }
+  // Show QR code for pending and checked-in status
+  if ((booking.status === "pending" || booking.status === "checked-in") && booking.qr && booking.qr.token) {
+    if (elements.bookingFields.qrCode) {
+      elements.bookingFields.qrCode.textContent = booking.qr.token;
+    }
+    
+    // Generate QR code image
+    if (elements.qrBox && typeof QRCode !== 'undefined') {
+      elements.qrBox.innerHTML = "";
+      QRCode.toCanvas(elements.qrBox, booking.qr.token, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }, function (error) {
+        if (error) {
+          console.error("QR Code generation error:", error);
+          elements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+        }
+      });
+    } else {
+      // Fallback if QRCode library not loaded
+      elements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+      // Try to load QRCode library dynamically
+      if (typeof QRCode === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        script.onload = function() {
+          if (elements.qrBox && booking.qr && booking.qr.token && (booking.status === "pending" || booking.status === "checked-in")) {
+            elements.qrBox.innerHTML = "";
+            QRCode.toCanvas(elements.qrBox, booking.qr.token, {
+              width: 200,
+              margin: 2,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              }
+            });
+          }
+        };
+        document.head.appendChild(script);
+      }
+    }
+  } else {
+    // Hide QR code for checked-in or completed status
+    if (elements.qrBox) {
+      elements.qrBox.innerHTML = "";
+      elements.qrBox.textContent = booking.status === "checked-in" ? "QR tidak diperlukan (sudah masuk)" : "QR tidak tersedia";
+    }
+    if (elements.bookingFields.qrCode) {
+      elements.bookingFields.qrCode.textContent = "-";
+    }
+  }
+  
+  if (elements.qrExpiredHint) {
+    elements.qrExpiredHint.classList.add("hidden");
+  }
   resetLiveMetrics();
   const isCheckedIn = booking.status === "checked-in";
   if (elements.cancelBooking) {
     elements.cancelBooking.classList.toggle("hidden", booking.status !== "pending");
   }
-  updateTimeline(booking.status, booking.qr.token);
+  if (elements.timelineSteps.qr && elements.timelineSteps.scan) {
+    updateTimeline(booking.status, booking.qr ? booking.qr.token : null);
+  }
   if (isCheckedIn) {
     startDurationTimer(booking.startTime);
-    elements.bookingFields.countdown.textContent = "Sedang parkir";
-  } else {
+    if (elements.bookingFields.countdown) {
+      elements.bookingFields.countdown.textContent = "Sedang parkir";
+    }
+  } else if (booking.qr && booking.qr.expiresAt) {
     startCountdown(booking.qr.expiresAt);
+  }
+  
+  // Show button to go to booking page (for pending and checked-in status)
+  if (booking.status === "pending" || booking.status === "checked-in") {
+    showGoToBookingButton();
+  } else {
+    hideGoToBookingButton();
+  }
+}
+
+function showGoToBookingButton() {
+  // Show button if we're on the map view and have an active booking (pending or checked-in)
+  const spotHeader = document.querySelector(".spot-header");
+  if (spotHeader && state.activeBooking && (state.activeBooking.status === "pending" || state.activeBooking.status === "checked-in")) {
+    // Use existing button from HTML or create if doesn't exist
+    let goToBookingBtn = document.getElementById("goToBookingPageBtn");
+    if (!goToBookingBtn) {
+      goToBookingBtn = document.createElement("button");
+      goToBookingBtn.id = "goToBookingPageBtn";
+      goToBookingBtn.className = "booking-btn";
+      goToBookingBtn.innerHTML = "📋 Lihat Booking";
+      goToBookingBtn.style.marginLeft = "0.5rem";
+      spotHeader.appendChild(goToBookingBtn);
+    }
+    // Add click event listener if not already added
+    if (!goToBookingBtn.hasAttribute("data-listener-added")) {
+      goToBookingBtn.addEventListener("click", () => {
+        window.location.href = "booking.html";
+      });
+      goToBookingBtn.setAttribute("data-listener-added", "true");
+    }
+    goToBookingBtn.style.display = "block";
+  }
+}
+
+function hideGoToBookingButton() {
+  const goToBookingBtn = document.getElementById("goToBookingPageBtn");
+  if (goToBookingBtn) {
+    goToBookingBtn.style.display = "none";
+  }
+  // Also hide if no active booking or booking is completed
+  if (!state.activeBooking || (state.activeBooking.status !== "pending" && state.activeBooking.status !== "checked-in")) {
+    const btn = document.getElementById("goToBookingPageBtn");
+    if (btn) {
+      btn.style.display = "none";
+    }
   }
 }
 
 function hideBookingPanel() {
   state.activeBooking = null;
-  elements.activeBooking.classList.add("hidden");
-  elements.qrExpiredHint.classList.add("hidden");
+  if (elements.activeBooking) {
+    elements.activeBooking.classList.add("hidden");
+  }
+  if (elements.qrExpiredHint) {
+    elements.qrExpiredHint.classList.add("hidden");
+  }
+  hideGoToBookingButton();
   clearCountdown();
   clearDurationTimer();
   elements.bookingFields.countdown.textContent = "30:00";
@@ -463,22 +617,49 @@ function hideBookingPanel() {
 function startCountdown(expiry) {
   clearCountdown();
   clearDurationTimer();
+  
   function tick() {
     const diff = new Date(expiry).getTime() - Date.now();
     if (diff <= 0) {
-      elements.bookingFields.countdown.textContent = "00:00";
-      elements.qrExpiredHint.classList.remove("hidden");
+      // Time expired - auto cancel booking
+      if (elements.bookingFields.countdown) {
+        elements.bookingFields.countdown.textContent = "00:00";
+      }
+      if (elements.qrExpiredHint) {
+        elements.qrExpiredHint.classList.remove("hidden");
+        elements.qrExpiredHint.textContent = "⚠️ QR kadaluarsa, booking otomatis dibatalkan.";
+      }
       clearCountdown();
+      
+      // Auto cancel booking
+      cancelExpiredBooking();
       return;
     }
+    
     const minutes = Math.floor(diff / 1000 / 60);
     const seconds = Math.floor((diff / 1000) % 60);
-    elements.bookingFields.countdown.textContent = `${String(minutes).padStart(2, "0")}:${String(
-      seconds,
-    ).padStart(2, "0")}`;
+    const countdownText = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    
+    if (elements.bookingFields.countdown) {
+      elements.bookingFields.countdown.textContent = `Waktu tersisa: ${countdownText}`;
+    }
   }
   tick();
   state.countdownInterval = setInterval(tick, 1000);
+}
+
+async function cancelExpiredBooking() {
+  try {
+    await apiFetch("/parking/cancel", {
+      method: "POST",
+    });
+    // Reload page or show message
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  } catch (err) {
+    console.error("Error canceling expired booking:", err);
+  }
 }
 
 function clearCountdown() {
@@ -566,6 +747,14 @@ async function bootstrapSession(session) {
   try {
     if (session.role === "user") {
       await Promise.all([loadSpots(), loadWallet(), loadHistory(), loadActiveBooking()]);
+      // Show/hide booking button based on active booking after loading
+      setTimeout(() => {
+        if (state.activeBooking && (state.activeBooking.status === "pending" || state.activeBooking.status === "checked-in")) {
+          showGoToBookingButton();
+        } else {
+          hideGoToBookingButton();
+        }
+      }, 100);
     } else {
       await Promise.all([loadAdminSpots(), loadReports()]);
     }
@@ -616,11 +805,21 @@ async function loadActiveBooking() {
     const { booking } = await apiFetch("/parking/active");
     if (booking) {
       showBookingPanel(booking);
+      // Show button if booking is pending or checked-in
+      if (booking.status === "pending" || booking.status === "checked-in") {
+        showGoToBookingButton();
+      } else {
+        hideGoToBookingButton();
+      }
     } else {
       hideBookingPanel();
+      hideGoToBookingButton(); // Hide button when no active booking
     }
+    // Reload history to include all bookings
+    await loadHistory();
   } catch (err) {
     hideBookingPanel();
+    hideGoToBookingButton(); // Hide button on error
   }
 }
 
@@ -742,6 +941,97 @@ document.querySelectorAll(".amount-btn").forEach((btn) => {
   });
 });
 
+// Camera scanning state
+let cameraStream = null;
+let scanInterval = null;
+
+function startCameraScan() {
+  const video = document.getElementById("cameraVideo");
+  const canvas = document.getElementById("qrCanvas");
+  const qrTokenInput = document.getElementById("qrTokenInput");
+  const cameraContainer = document.getElementById("cameraContainer");
+  const startBtn = document.getElementById("startCameraBtn");
+  const stopBtn = document.getElementById("stopCameraBtn");
+  
+  if (!video || !canvas || !qrTokenInput) return;
+  
+  navigator.mediaDevices.getUserMedia({ 
+    video: { 
+      facingMode: 'environment' // Use back camera on mobile
+    } 
+  })
+  .then(stream => {
+    cameraStream = stream;
+    video.srcObject = stream;
+    cameraContainer.style.display = "block";
+    startBtn.style.display = "none";
+    stopBtn.style.display = "block";
+    
+    const ctx = canvas.getContext('2d');
+    
+    scanInterval = setInterval(() => {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        if (typeof jsQR !== 'undefined') {
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code) {
+            qrTokenInput.value = code.data;
+            stopCameraScan();
+            // Auto-submit or show success message
+            const resultBox = elements.adminScanResult;
+            resultBox.className = "scan-result-box success";
+            resultBox.innerHTML = `
+              <div class="result-icon">✅</div>
+              <p class="result-text">QR Code berhasil dipindai</p>
+              <p class="result-subtext">Token: ${code.data}</p>
+            `;
+          }
+        }
+      }
+    }, 100);
+  })
+  .catch(err => {
+    console.error("Camera access error:", err);
+    alert("Tidak dapat mengakses kamera. Pastikan izin kamera sudah diberikan.");
+  });
+}
+
+function stopCameraScan() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  if (scanInterval) {
+    clearInterval(scanInterval);
+    scanInterval = null;
+  }
+  const video = document.getElementById("cameraVideo");
+  const cameraContainer = document.getElementById("cameraContainer");
+  const startBtn = document.getElementById("startCameraBtn");
+  const stopBtn = document.getElementById("stopCameraBtn");
+  
+  if (video) video.srcObject = null;
+  if (cameraContainer) cameraContainer.style.display = "none";
+  if (startBtn) startBtn.style.display = "block";
+  if (stopBtn) stopBtn.style.display = "none";
+}
+
+// Camera button handlers
+const startCameraBtn = document.getElementById("startCameraBtn");
+const stopCameraBtn = document.getElementById("stopCameraBtn");
+
+if (startCameraBtn) {
+  startCameraBtn.addEventListener("click", startCameraScan);
+}
+
+if (stopCameraBtn) {
+  stopCameraBtn.addEventListener("click", stopCameraScan);
+}
+
 elements.adminScanForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const payload = Object.fromEntries(new FormData(event.target).entries());
@@ -805,7 +1095,8 @@ if (elements.cancelBooking) {
         method: "POST",
       });
       hideBookingPanel();
-      await Promise.all([loadSpots(), loadHistory()]);
+      hideGoToBookingButton();
+      await Promise.all([loadSpots(), loadHistory(), loadActiveBooking()]);
     } catch (err) {
       alert(err.message);
     }

@@ -251,8 +251,8 @@ def get_booking(db: Session = Depends(get_db)):
 @router.post("/booking", response_model=schemas.Booking)
 def create_booking(data: schemas.BookingCreate, db: Session = Depends(get_db)):
     # cek foreign key parkir
-    parkir = db.query(models.Mikrokontroler).filter(
-        models.Mikrokontroler.id_mikrokontroler == data.id_parkir
+    parkir = db.query(models.Slot).filter(
+        models.Slot.id_slot == data.id_parkir
     ).first()
     if not parkir:
         raise HTTPException(404, "Parkir (Mikrokontroler) tidak ditemukan")
@@ -281,8 +281,8 @@ def update_booking(id_booking: int, data: schemas.BookingUpdate, db: Session = D
 
     # cek id_parkir jika ingin diupdate
     if data.id_parkir is not None:
-        parkir = db.query(models.Mikrokontroler).filter(
-            models.Mikrokontroler.id_mikrokontroler == data.id_parkir
+        parkir = db.query(models.Slot).filter(
+            models.Slot.id_slot == data.id_parkir
         ).first()
         if not parkir:
             raise HTTPException(404, "Parkir tidak ditemukan")

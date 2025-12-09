@@ -71,9 +71,11 @@
                 <input
                   type="text"
                   name="name"
+                  id="registerName"
                   required
                   class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
                 />
+                <p class="text-xs text-red-500 mt-1 hidden" id="registerNameError"></p>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-brandPurple mb-2"
@@ -82,20 +84,41 @@
                 <input
                   type="email"
                   name="email"
+                  id="registerEmail"
                   required
                   class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
                 />
+                <p class="text-xs text-red-500 mt-1 hidden" id="registerEmailError"></p>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-brandPurple mb-2"
-                  >Password</label
+                  >Nomor Telepon</label
+                >
+                <input
+                  type="tel"
+                  name="notelp"
+                  id="registerNotelp"
+                  required
+                  placeholder="08xxxxxxxxxx"
+                  class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
+                />
+                <p class="text-xs text-red-500 mt-1 hidden" id="registerNotelpError"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-brandPurple mb-2"
+                  >Password (Minimal 8 karakter)</label
                 >
                 <input
                   type="password"
                   name="password"
+                  id="registerPassword"
                   required
+                  minlength="8"
+                  placeholder="Minimal 8 karakter"
                   class="w-full border-2 border-brandPurple/40 focus:border-brandPurple rounded-2xl px-4 py-3 outline-none transition"
                 />
+                <p class="text-xs text-gray-500 mt-1">Password harus minimal 8 karakter</p>
+                <p class="text-xs text-red-500 mt-1 hidden" id="registerPasswordError"></p>
               </div>
               <div class="flex flex-wrap gap-4 pt-2">
                 <button

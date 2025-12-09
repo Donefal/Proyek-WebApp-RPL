@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import secrets
 
@@ -15,17 +15,30 @@ QR_TTL_MINUTES = 30
 FIRST_HOUR_RATE = 10000
 EXTRA_HOUR_RATE = 5000
 
+# GMT+7 timezone (WIB - Western Indonesian Time)
+GMT7 = timezone(timedelta(hours=7))
+
+def get_now_gmt7():
+    """Get current datetime in GMT+7 timezone"""
+    return datetime.now(GMT7)
+
 def create_qr_token():
     """Generate QR token"""
+    now = get_now_gmt7()
     return {
         "token": secrets.token_urlsafe(12),
-        "expiresAt": (datetime.utcnow() + timedelta(minutes=QR_TTL_MINUTES)).isoformat()
+        "expiresAt": (now + timedelta(minutes=QR_TTL_MINUTES)).isoformat()
     }
 
 def calculate_parking_cost(start_time: datetime, end_time: Optional[datetime] = None):
     """Calculate parking cost"""
     if not end_time:
-        end_time = datetime.utcnow()
+        end_time = get_now_gmt7()
+    # Ensure both times are timezone-aware
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=GMT7)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=GMT7)
     elapsed_ms = (end_time - start_time).total_seconds() * 1000
     hours = max(1, int((elapsed_ms / (60 * 60 * 1000)) + 0.99))  # Round up
     cost = FIRST_HOUR_RATE + max(0, hours - 1) * EXTRA_HOUR_RATE
@@ -77,9 +90,10 @@ def get_spots(
     for slot in slots:
         # Check if slot is booked
         is_booked = slot.booked
-        is_occupied = slot.occupied
-        is_available = not is_booked and not is_occupied
-        
+       # is_occupied = slot.occupied --disable occupied
+       # is_available = not is_booked and not is_occupied
+        is_available = not is_booked
+
         # Get mikrokontroler info
         mikrokontroler = db.query(models.Mikrokontroler).filter(
             models.Mikrokontroler.id_mikrokontroler == slot.id_mikrokontroler
@@ -143,11 +157,17 @@ def create_booking(
     if not mikrokontroler:
         raise HTTPException(status_code=404, detail="Mikrokontroler tidak ditemukan")
     
+    # Generate QR token
+    qr = create_qr_token()
+    qr_expires_at = get_now_gmt7() + timedelta(minutes=QR_TTL_MINUTES)
+    
     # Create booking
     new_booking = models.Booking(
         id_parkir=mikrokontroler.id_mikrokontroler,
         id_customer=user.id_customer,
-        status="pending"
+        status="pending",
+        qr_token=qr["token"],
+        qr_expires_at=qr_expires_at
     )
     db.add(new_booking)
     
@@ -156,9 +176,6 @@ def create_booking(
     db.commit()
     db.refresh(new_booking)
     
-    # Generate QR token
-    qr = create_qr_token()
-    
     return {
         "booking": {
             "id": f"B-{new_booking.id_booking}",
@@ -166,7 +183,7 @@ def create_booking(
             "spotId": spot_id_str,
             "qr": qr,
             "status": new_booking.status,
-            "createdAt": new_booking.waktu_booking.isoformat() if new_booking.waktu_booking else datetime.utcnow().isoformat(),
+            "createdAt": new_booking.waktu_booking.isoformat() if new_booking.waktu_booking else get_now_gmt7().isoformat(),
             "startTime": None,
             "endTime": None,
             "cost": None
@@ -197,13 +214,45 @@ def get_active_booking(
     if not slot:
         return {"booking": None}
     
-    # Generate QR token (for pending bookings)
-    qr = None
+    # Check if QR token expired for pending bookings
     if booking.status == "pending":
-        qr = create_qr_token()
+        now = get_now_gmt7()
+        # Ensure qr_expires_at is timezone-aware for comparison
+        if booking.qr_expires_at:
+            if booking.qr_expires_at.tzinfo is None:
+                # If stored without timezone, assume it's GMT+7
+                qr_expires_at_aware = booking.qr_expires_at.replace(tzinfo=GMT7)
+            else:
+                qr_expires_at_aware = booking.qr_expires_at
+            
+            if qr_expires_at_aware < now:
+                # Auto cancel expired booking
+                booking.status = "cancelled"
+                slot.booked = False
+                db.commit()
+                return {"booking": None}
+        
+        # Use existing QR token or generate new if missing
+        if booking.qr_token and booking.qr_expires_at:
+            qr = {
+                "token": booking.qr_token,
+                "expiresAt": booking.qr_expires_at.isoformat() if booking.qr_expires_at.tzinfo else booking.qr_expires_at.replace(tzinfo=GMT7).isoformat()
+            }
+        else:
+            # Generate new QR token if missing
+            qr = create_qr_token()
+            booking.qr_token = qr["token"]
+            booking.qr_expires_at = get_now_gmt7() + timedelta(minutes=QR_TTL_MINUTES)
+            db.commit()
     else:
-        # For checked-in, use existing token or generate new
-        qr = create_qr_token()
+        # For checked-in, still return QR token if exists (for exit validation)
+        if booking.qr_token and booking.qr_expires_at:
+            qr = {
+                "token": booking.qr_token,
+                "expiresAt": booking.qr_expires_at.isoformat() if booking.qr_expires_at.tzinfo else booking.qr_expires_at.replace(tzinfo=GMT7).isoformat()
+            }
+        else:
+            qr = None
     
     return {
         "booking": {
@@ -212,7 +261,7 @@ def get_active_booking(
             "spotId": f"S{slot.id_slot}",
             "qr": qr,
             "status": booking.status,
-            "createdAt": booking.waktu_booking.isoformat() if booking.waktu_booking else datetime.utcnow().isoformat(),
+            "createdAt": booking.waktu_booking.isoformat() if booking.waktu_booking else get_now_gmt7().isoformat(),
             "startTime": booking.waktu_masuk.isoformat() if booking.waktu_masuk else None,
             "endTime": booking.waktu_keluar.isoformat() if booking.waktu_keluar else None,
             "cost": None
@@ -253,13 +302,14 @@ def get_history(
     authorization: Optional[str] = Header(None, alias="Authorization"),
     db: Session = Depends(get_db)
 ):
-    """Get parking history for current user"""
+    """Get parking history for current user - includes all statuses"""
     user = get_user_from_request(authorization, db)
     
+    # Get all bookings except active ones (pending and checked-in are shown in active booking)
+    # Include: cancelled, completed, and also pending/checked-in for history
     bookings = db.query(models.Booking).filter(
-        models.Booking.id_customer == user.id_customer,
-        models.Booking.status == "completed"
-    ).order_by(models.Booking.waktu_keluar.desc()).all()
+        models.Booking.id_customer == user.id_customer
+    ).order_by(models.Booking.waktu_booking.desc()).all()
     
     history = []
     for booking in bookings:
@@ -268,20 +318,44 @@ def get_history(
             models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
         ).first()
         
-        # Calculate cost
-        cost_info = calculate_parking_cost(
-            booking.waktu_masuk if booking.waktu_masuk else booking.waktu_booking,
-            booking.waktu_keluar
-        )
+        # Calculate cost only for completed bookings
+        cost = None
+        duration_hours = None
+        if booking.status == "completed" and booking.waktu_masuk and booking.waktu_keluar:
+            cost_info = calculate_parking_cost(
+                booking.waktu_masuk,
+                booking.waktu_keluar
+            )
+            cost = cost_info["cost"]
+            duration_hours = cost_info["hours"]
+        elif booking.status == "checked-in" and booking.waktu_masuk:
+            # For checked-in, calculate estimated cost
+            cost_info = calculate_parking_cost(
+                booking.waktu_masuk,
+                get_now_gmt7()
+            )
+            cost = cost_info["cost"]
+            duration_hours = cost_info["hours"]
+        
+        # Format status display
+        status_display = {
+            "pending": "Menunggu",
+            "checked-in": "Sedang Parkir",
+            "completed": "Selesai",
+            "cancelled": "Dibatalkan"
+        }.get(booking.status, booking.status)
         
         history.append({
             "bookingId": f"B-{booking.id_booking}",
             "userId": str(user.id_customer),
             "spotName": f"Slot {slot.id_slot}" if slot else "Unknown",
-            "startTime": booking.waktu_masuk.isoformat() if booking.waktu_masuk else None,
+            "startTime": booking.waktu_masuk.isoformat() if booking.waktu_masuk else (booking.waktu_booking.isoformat() if booking.waktu_booking else None),
             "endTime": booking.waktu_keluar.isoformat() if booking.waktu_keluar else None,
-            "durationHours": cost_info["hours"],
-            "cost": cost_info["cost"]
+            "durationHours": duration_hours,
+            "cost": cost,
+            "status": booking.status,
+            "statusDisplay": status_display,
+            "createdAt": booking.waktu_booking.isoformat() if booking.waktu_booking else None
         })
     
     return {"history": history}
