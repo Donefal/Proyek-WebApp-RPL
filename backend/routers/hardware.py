@@ -14,13 +14,15 @@ router = APIRouter()
 async def update_from_esp32(data: schemas.FromESP32, db: Session = Depends(get_db)):
     print("Received from ESP32:", data.dict())
 
-    # TODO: Testing data
     for slot_update in data.slots:
         slot = db.query(models.Slot).filter(models.Slot.id_slot == slot_update.id_slot).first()
         if slot:
             slot.occupied = slot_update.occupied
-            # incoming schema provides `alarmed`, not `calculated`
             slot.alarmed = slot_update.alarmed
+        
+    for gate in db.query(models.Aktuator):
+        if gate.kondisi_buka == 1:
+            gate.kondisi_buka = 0
 
     db.commit()
 
