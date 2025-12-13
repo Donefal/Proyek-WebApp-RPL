@@ -480,6 +480,9 @@ function showBookingPanel(booking) {
     
     // Generate QR code image
     if (elements.qrBox && typeof QRCode !== 'undefined') {
+
+      console.log("Generating QR Code for token:", booking.qr.token);
+
       elements.qrBox.innerHTML = "";
       QRCode.toCanvas(elements.qrBox, booking.qr.token, {
         width: 200,
@@ -499,8 +502,11 @@ function showBookingPanel(booking) {
       elements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
       // Try to load QRCode library dynamically
       if (typeof QRCode === 'undefined') {
+
+        console.log("Loading QR Code library dynamically...");
+
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
         script.onload = function() {
           if (elements.qrBox && booking.qr && booking.qr.token && (booking.status === "pending" || booking.status === "checked-in")) {
             elements.qrBox.innerHTML = "";

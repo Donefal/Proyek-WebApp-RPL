@@ -178,27 +178,43 @@ function showActiveBooking(booking) {
     
     // Generate QR code image
     if (bookingElements.qrBox && typeof QRCode !== 'undefined') {
+
+      console.log("Generating QR Code for token:", booking.qr.token); // masuk loh kesini
+
       bookingElements.qrBox.innerHTML = "";
-      QRCode.toCanvas(bookingElements.qrBox, booking.qr.token, {
+
+      new QRCode(bookingElements.qrBox, {
+        text: booking.qr.token,
         width: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      }, function (error) {
-        if (error) {
-          console.error("QR Code generation error:", error);
-          bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
-        }
+        height: 200,
+        colorDark : "#000000",
+        colorLight : "#FFFFFF",
+        correctLevel : QRCode.CorrectLevel.H
       });
+
+      // QRCode.toCanvas(bookingElements.qrBox, booking.qr.token, {
+      //   width: 200,
+      //   margin: 2,
+      //   color: {
+      //     dark: '#000000',
+      //     light: '#FFFFFF'
+      //   }
+      // }, function (error) {
+      //   if (error) {
+      //     console.error("QR Code generation error:", error);
+      //     bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
+      //   }
+      // });
     } else {
       // Fallback if QRCode library not loaded
       bookingElements.qrBox.textContent = booking.qr.token.slice(0, 8).toUpperCase();
       // Try to load QRCode library dynamically
       if (typeof QRCode === 'undefined') {
+
+        console.log("Loading QRCode library dynamically...");
+
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
         script.onload = function() {
           if (bookingElements.qrBox && booking.qr && booking.qr.token && (booking.status === "pending" || booking.status === "checked-in")) {
             bookingElements.qrBox.innerHTML = "";
