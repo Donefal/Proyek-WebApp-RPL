@@ -206,59 +206,95 @@ def get_reports(
     db: Session = Depends(get_db)
 ):
     """Get admin reports"""
-    get_admin_from_request(authorization, db)
+    try:
+        get_admin_from_request(authorization, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Authorization failed: {str(e)}")
     
-    # Calculate today's date range
-    now = get_now_gmt7()
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + timedelta(days=1)
-    
-    # Get today's completed bookings
-    today_bookings = db.query(models.Booking).filter(
-        models.Booking.status == "completed",
-        models.Booking.waktu_keluar >= today_start,
-        models.Booking.waktu_keluar < today_end
-    ).all()
-    
-    # Calculate revenue
-    today_revenue = 0
-    today_entries = 0
-    today_exits = 0
-    
-    for booking in today_bookings:
-        if booking.waktu_masuk and booking.waktu_keluar:
-            start_time = booking.waktu_masuk
-            end_time = booking.waktu_keluar
-            cost_info = calculate_parking_cost(start_time, end_time)
-            today_revenue += cost_info["cost"]
+    try:
+        # Calculate today's date range - convert to timezone-naive for MySQL compatibility
+        now = get_now_gmt7()
+        # MySQL stores datetime as timezone-naive, so convert comparison times to naive
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
         
-        if booking.waktu_masuk and booking.waktu_masuk >= today_start:
-            today_entries += 1
+        # Convert to naive datetime for MySQL comparison (strip timezone info)
+        if today_start.tzinfo:
+            today_start_naive = today_start.replace(tzinfo=None)
+        else:
+            today_start_naive = today_start
         
-        if booking.waktu_keluar and booking.waktu_keluar >= today_start:
-            today_exits += 1
-    
-    # Calculate month revenue
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    month_bookings = db.query(models.Booking).filter(
-        models.Booking.status == "completed",
-        models.Booking.waktu_keluar >= month_start
-    ).all()
-    
-    month_revenue = 0
-    for booking in month_bookings:
-        if booking.waktu_masuk and booking.waktu_keluar:
-            start_time = booking.waktu_masuk
-            end_time = booking.waktu_keluar
-            cost_info = calculate_parking_cost(start_time, end_time)
-            month_revenue += cost_info["cost"]
-    
-    return {
-        "reports": {
-            "todayRevenue": today_revenue,
-            "monthRevenue": month_revenue,
-            "todayEntries": today_entries,
-            "todayExits": today_exits
+        if today_end.tzinfo:
+            today_end_naive = today_end.replace(tzinfo=None)
+        else:
+            today_end_naive = today_end
+        
+        # Get today's completed bookings - only where waktu_keluar is not None
+        today_bookings = db.query(models.Booking).filter(
+            models.Booking.status == "completed",
+            models.Booking.waktu_keluar.isnot(None),
+            models.Booking.waktu_keluar >= today_start_naive,
+            models.Booking.waktu_keluar < today_end_naive
+        ).all()
+        
+        # Calculate revenue
+        today_revenue = 0
+        today_entries = 0
+        today_exits = 0
+        
+        for booking in today_bookings:
+            if booking.waktu_masuk and booking.waktu_keluar:
+                start_time = booking.waktu_masuk
+                end_time = booking.waktu_keluar
+                cost_info = calculate_parking_cost(start_time, end_time)
+                today_revenue += cost_info["cost"]
+            
+            # Compare with naive datetime
+            if booking.waktu_masuk:
+                waktu_masuk_naive = booking.waktu_masuk.replace(tzinfo=None) if booking.waktu_masuk.tzinfo else booking.waktu_masuk
+                if waktu_masuk_naive >= today_start_naive:
+                    today_entries += 1
+            
+            if booking.waktu_keluar:
+                waktu_keluar_naive = booking.waktu_keluar.replace(tzinfo=None) if booking.waktu_keluar.tzinfo else booking.waktu_keluar
+                if waktu_keluar_naive >= today_start_naive:
+                    today_exits += 1
+        
+        # Calculate month revenue
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if month_start.tzinfo:
+            month_start_naive = month_start.replace(tzinfo=None)
+        else:
+            month_start_naive = month_start
+        
+        month_bookings = db.query(models.Booking).filter(
+            models.Booking.status == "completed",
+            models.Booking.waktu_keluar.isnot(None),
+            models.Booking.waktu_keluar >= month_start_naive
+        ).all()
+        
+        month_revenue = 0
+        for booking in month_bookings:
+            if booking.waktu_masuk and booking.waktu_keluar:
+                start_time = booking.waktu_masuk
+                end_time = booking.waktu_keluar
+                cost_info = calculate_parking_cost(start_time, end_time)
+                month_revenue += cost_info["cost"]
+        
+        return {
+            "reports": {
+                "todayRevenue": today_revenue,
+                "monthRevenue": month_revenue,
+                "todayEntries": today_entries,
+                "todayExits": today_exits
+            }
         }
-    }
+    except Exception as e:
+        # Log the error for debugging
+        import traceback
+        print(f"Error in get_reports: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
