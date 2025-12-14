@@ -130,9 +130,9 @@ def scan_qr(
         booking.status = "checked-in"
         booking.waktu_masuk = get_now_gmt7()
         
-        # Mark slot as confirmed
-        slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
-            models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
+        # Mark slot as confirmed - id_parkir directly references slot.id_slot
+        slot = db.query(models.Slot).filter(
+            models.Slot.id_slot == booking.id_parkir
         ).first()
         if slot:
             slot.confirmed = True
@@ -176,9 +176,9 @@ def scan_qr(
         booking.status = "completed"
         booking.waktu_keluar = get_now_gmt7()
         
-        # Free up slot
-        slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
-            models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
+        # Free up slot - id_parkir directly references slot.id_slot
+        slot = db.query(models.Slot).filter(
+            models.Slot.id_slot == booking.id_parkir
         ).first()
         if slot:
             slot.booked = False

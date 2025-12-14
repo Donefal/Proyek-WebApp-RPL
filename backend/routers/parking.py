@@ -149,21 +149,13 @@ def create_booking(
             # For simplicity, allow only one active booking
             raise HTTPException(status_code=400, detail="Masih ada booking aktif")
     
-    # Get mikrokontroler for this slot
-    mikrokontroler = db.query(models.Mikrokontroler).filter(
-        models.Mikrokontroler.id_mikrokontroler == slot.id_mikrokontroler
-    ).first()
-    
-    if not mikrokontroler:
-        raise HTTPException(status_code=404, detail="Mikrokontroler tidak ditemukan")
-    
     # Generate QR token
     qr = create_qr_token()
     qr_expires_at = get_now_gmt7() + timedelta(minutes=QR_TTL_MINUTES)
     
     # Create booking
     new_booking = models.Booking(
-        id_parkir=mikrokontroler.id_mikrokontroler,
+        id_parkir=slot.id_slot,
         id_customer=user.id_customer,
         status="pending",
         qr_token=qr["token"],
@@ -206,9 +198,9 @@ def get_active_booking(
     if not booking:
         return {"booking": None}
     
-    # Get slot info
-    slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
-        models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
+    # Get slot info - id_parkir directly references slot.id_slot
+    slot = db.query(models.Slot).filter(
+        models.Slot.id_slot == booking.id_parkir
     ).first()
     
     if not slot:
@@ -284,9 +276,9 @@ def cancel_booking(
     if not booking:
         raise HTTPException(status_code=400, detail="Tidak ada booking yang bisa dibatalkan")
     
-    # Get slot and mark as available
-    slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
-        models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
+    # Get slot and mark as available - id_parkir directly references slot.id_slot
+    slot = db.query(models.Slot).filter(
+        models.Slot.id_slot == booking.id_parkir
     ).first()
     
     if slot:
@@ -313,9 +305,9 @@ def get_history(
     
     history = []
     for booking in bookings:
-        # Get slot info
-        slot = db.query(models.Slot).join(models.Mikrokontroler).filter(
-            models.Mikrokontroler.id_mikrokontroler == booking.id_parkir
+        # Get slot info - id_parkir directly references slot.id_slot
+        slot = db.query(models.Slot).filter(
+            models.Slot.id_slot == booking.id_parkir
         ).first()
         
         # Calculate cost only for completed bookings
