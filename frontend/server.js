@@ -3,7 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const { nanoid } = require("nanoid");
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 8080;
 const QR_TTL_MINUTES = 30;
 const FIRST_HOUR_RATE = 10000;
 const EXTRA_HOUR_RATE = 5000;

@@ -5,10 +5,10 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   // If accessing from localhost, use localhost:8000
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:8000';
+    return 'http://localhost:8880';
   }
   // Otherwise, use the same hostname with port 8000
-  return `http://${hostname}:8000`;
+  return `https://api.parkingly.space`;
 };
 const API_BASE_URL = getApiBaseUrl();
 const STORAGE_KEY = "ParkinglySession";

@@ -3,12 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import database_op, hardware, auth, parking, wallet, admin
 
 app = FastAPI()
+origins = [
+    "http://localhost:8080",   # untuk development
+    "http://localhost:8880",   # jika frontend lokal
+    "https://web.parkingly.space",  # domain frontend produksi
+]
 
 # CORS Configuration - Allow all origins for cross-device access
 # In production, restrict to specific domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development/cross-device access
+    allow_origins=origins,  # Allow all origins for development/cross-device access
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

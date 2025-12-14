@@ -8,7 +8,7 @@ echo ==============================
 REM --- Kill process using port 8000 ---
 echo Checking if port 8000 is in use...
 for /f "tokens=5" %%a in ('netstat -ano ^| find ":8000" ^| find "LISTENING"') do (
-    echo Port 8000 is in use by PID %%a
+    echo Port 8880 is in use by PID %%a
     echo Killing process...
     taskkill /PID %%a /F >nul 2>&1
     echo Process %%a terminated.
@@ -33,7 +33,7 @@ cd backend
 
 REM --- Run FastAPI server ---
 echo Starting FastAPI development server...
-fastapi dev main.py --host 0.0.0.0 --port 8000
+fastapi dev main.py --host 0.0.0.0 --port 8880
 
 echo ==============================
 echo FastAPI server stopped.
