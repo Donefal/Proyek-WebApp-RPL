@@ -241,14 +241,26 @@ function renderAdminSpotsGrid(list) {
 
   const available = list.filter((spot) => spot.status === "available").length;
   const occupied = list.filter((spot) => spot.status === "occupied").length;
+  const booked = list.filter((spot) => spot.status === "booked").length;
+  const confirmed = list.filter((spot) => spot.status === "confirmed").length;
+  const alert = list.filter((spot) => spot.status === "alert").length;
+  const unknown = list.filter((spot) => !spot.status || spot.status === "unknown").length;
   const total = list.length;
   
   const availableCountEl = document.getElementById("adminAvailableCount");
   const occupiedCountEl = document.getElementById("adminOccupiedCount");
+  const bookedCountEl = document.getElementById("adminBookedCount");
+  const confirmedCountEl = document.getElementById("adminConfirmedCount");
+  const alertCountEl = document.getElementById("adminAlertCount");
+  const unknownCountEl = document.getElementById("adminUnknownCount");
   const totalCountEl = document.getElementById("adminTotalCount");
   
   if (availableCountEl) availableCountEl.textContent = available;
   if (occupiedCountEl) occupiedCountEl.textContent = occupied;
+  if (bookedCountEl) bookedCountEl.textContent = booked;
+  if (confirmedCountEl) confirmedCountEl.textContent = confirmed;
+  if (alertCountEl) alertCountEl.textContent = alert;
+  if (unknownCountEl) unknownCountEl.textContent = unknown;
   if (totalCountEl) totalCountEl.textContent = total;
   
   // Sort spots by code

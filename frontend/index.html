@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parkingly</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Admin availability highlight */
+      .admin-spot-card.status-alert {
+        background: #ffe5e5;
+        border-color: #e74c3c;
+      }
+      .admin-spot-card.status-confirmed {
+        background: #e8f8f0;
+        border-color: #27ae60;
+      }
+    </style>
 
     <!-- Favicon utama -->
     <link rel="icon" href="elemen/favicon.ico" type="image/x-icon" />
@@ -370,6 +381,34 @@
                     <div class="stat-content-admin">
                       <span class="stat-label-admin">Terisi</span>
                       <strong class="stat-value-admin" id="adminOccupiedCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin booked">🅱️</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Booked</span>
+                      <strong class="stat-value-admin" id="adminBookedCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin confirmed">✅</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Confirmed</span>
+                      <strong class="stat-value-admin" id="adminConfirmedCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin alert">⚠️</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Alert</span>
+                      <strong class="stat-value-admin" id="adminAlertCount">0</strong>
+                    </div>
+                  </div>
+                  <div class="stat-card-admin">
+                    <div class="stat-icon-admin unknown">❔</div>
+                    <div class="stat-content-admin">
+                      <span class="stat-label-admin">Unknown</span>
+                      <strong class="stat-value-admin" id="adminUnknownCount">0</strong>
                     </div>
                   </div>
                   <div class="stat-card-admin">
