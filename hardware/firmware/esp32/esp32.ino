@@ -15,6 +15,7 @@ const char* password = "BocilTuyul30";
 // =====================================================
 String GET_URL  = "https://api.parkingly.space/hw/instruction";
 String POST_URL = "https://api.parkingly.space/hw/update";
+String POST_GATE_URL = "https://api.parkingly.space/hw/update-gate";
 
 // =====================================================
 // Structs
@@ -69,6 +70,7 @@ bool occupied[AMOUNT_OF_SLOTS] = {false, false};
 bool alarmed[AMOUNT_OF_SLOTS]  = {false, false};
 unsigned long gateCloseTime[2] = {0, 0}; // Track when gate should be considered closed (index 0 = enter, 1 = exit)
 const unsigned long GATE_CLOSE_DELAY = 2500; // 2.5 seconds after opening (2s open + 0.5s buffer)
+bool gateNeedsUpdate[2] = {false, false}; // Track if gate status needs to be sent to backend (index 0 = enter, 1 = exit)
 
 // =====================================================
 // Ultrasonic Measurement
@@ -147,7 +149,7 @@ bool getFromAPI(JsonDocument &doc) {
 }
 
 // =====================================================
-// POST API (HTTPS)
+// POST API (HTTPS) - Slot Updates
 // =====================================================
 void sendToAPI() {
   if (WiFi.status() != WL_CONNECTED) {
@@ -187,6 +189,42 @@ void sendToAPI() {
 }
 
 // =====================================================
+// POST API (HTTPS) - Gate Status Updates
+// =====================================================
+void sendGateStatusToAPI(int gateId, const char* condition) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("[POST-GATE] WiFi not connected");
+    return;
+  }
+
+  StaticJsonDocument<256> doc;
+  JsonArray gates = doc.createNestedArray("gates");
+  JsonObject gate = gates.createNestedObject();
+  gate["id_gate"] = gateId;
+  gate["condition"] = condition;
+
+  String json;
+  serializeJson(doc, json);
+
+  Serial.print("[POST-GATE] JSON: ");
+  Serial.println(json);
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+  http.setTimeout(5000);
+  http.begin(client, POST_GATE_URL);
+  http.addHeader("Content-Type", "application/json");
+
+  int code = http.POST(json);
+  Serial.print("[POST-GATE] HTTP Code: ");
+  Serial.println(code);
+
+  http.end();
+}
+
+// =====================================================
 // Gate Control
 // =====================================================
 bool gateOpening[2] = {false, false}; // Track if gate is currently opening (index 0 = enter, 1 = exit)
@@ -199,6 +237,7 @@ void openGate(Servo &gate, int open, int close, int gateId) {
   delay(2000);
   gate.write(close);
   gateOpening[gateId - 1] = false; // Mark gate as closed after operation
+  gateNeedsUpdate[gateId - 1] = true; // Mark that gate status needs to be sent to backend
 }
 
 void closeGate(Servo &gate, int close) {
@@ -302,10 +341,16 @@ void loop() {
   // ===== POST status =====
   sendToAPI();
   
-  // Check if gates should be reset after closing
-  // After gate closes, we need to signal backend to reset kondisi_buka
-  // This is handled by the backend not auto-resetting gates, allowing frontend commands priority
-  // The gate will stay open (kondisi_buka = true) until next operation or manual reset
+  // Send gate status updates after gate operations complete
+  // This allows backend to reset kondisi_buka after hardware confirms gate closed
+  for (int i = 0; i < 2; i++) {
+    if (gateNeedsUpdate[i] && !gateOpening[i]) {
+      // Gate operation completed, send status update to backend
+      int gateId = i + 1; // Convert index to gate ID (1 = enter, 2 = exit)
+      sendGateStatusToAPI(gateId, "closed");
+      gateNeedsUpdate[i] = false; // Mark as sent
+    }
+  }
 
   Serial.println("=================================");
   delay(3000);
