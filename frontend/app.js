@@ -229,9 +229,18 @@ function renderAdminSpotsGrid(list) {
     return;
   }
   
-  // Update statistics
-  const available = list.filter((spot) => spot.isAvailable).length;
-  const occupied = list.filter((spot) => !spot.isAvailable).length;
+  // Update statistics based on status (not only isAvailable)
+  const statusLabelMap = {
+    available: "Tersedia",
+    booked: "Booked",
+    confirmed: "Confirmed",
+    occupied: "Terisi",
+    alert: "Alert",
+    unknown: "Unknown",
+  };
+
+  const available = list.filter((spot) => spot.status === "available").length;
+  const occupied = list.filter((spot) => spot.status === "occupied").length;
   const total = list.length;
   
   const availableCountEl = document.getElementById("adminAvailableCount");
@@ -250,16 +259,19 @@ function renderAdminSpotsGrid(list) {
   });
   
   sortedSpots.forEach((spot) => {
+    const statusText = statusLabelMap[spot.status] || "Unknown";
+    const statusClass = spot.status ? spot.status : "unknown";
     const card = document.createElement("div");
-    card.className = `admin-spot-card ${spot.isAvailable ? "available" : "occupied"}`;
+    card.className = `admin-spot-card status-${statusClass}`;
     card.innerHTML = `
       <div class="admin-spot-header">
         <div class="admin-spot-name">${spot.name}</div>
-        <span class="admin-spot-status ${spot.isAvailable ? "available" : "occupied"}">
-          ${spot.isAvailable ? "Tersedia" : "Terisi"}
+        <span class="admin-spot-status status-${statusClass}">
+          ${statusText}
         </span>
       </div>
       <div class="admin-spot-code">Kode: ${spot.code}</div>
+      <div class="admin-spot-meta">Status: ${statusText}</div>
     `;
     elements.adminSpotList.appendChild(card);
   });
@@ -461,6 +473,8 @@ function setWalletBalance(amount) {
 }
 
 function showBookingPanel(booking) {
+  // Stop any previous countdown when refreshing booking info
+  clearCountdown();
   state.activeBooking = booking;
   if (elements.activeBooking) {
     elements.activeBooking.classList.remove("hidden");
@@ -546,6 +560,11 @@ function showBookingPanel(booking) {
     updateTimeline(booking.status, booking.qr ? booking.qr.token : null);
   }
   if (isCheckedIn) {
+    // Once confirmed/checked-in, countdown must stop to avoid QR expiry
+    clearCountdown();
+    if (elements.bookingFields.countdown) {
+      elements.bookingFields.countdown.textContent = "Sedang parkir";
+    }
     startDurationTimer(booking.startTime);
     if (elements.bookingFields.countdown) {
       elements.bookingFields.countdown.textContent = "Sedang parkir";
