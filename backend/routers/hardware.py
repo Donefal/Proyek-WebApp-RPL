@@ -11,8 +11,8 @@ router = APIRouter()
 #   ESP32 → Backend (POST)
 # ============================
 @router.post("/update")
-async def update_from_esp32(data: schemas.FromESP32, db: Session = Depends(get_db)):
-    print("Received from ESP32:", data.dict())
+async def update_from_esp32(data: schemas.FromESP32_detection, db: Session = Depends(get_db)):
+    print("(Slot) Received from ESP32:", data.dict())
 
     for slot_update in data.slots:
         slot = db.query(models.Slot).filter(models.Slot.id_slot == slot_update.id_slot).first()
@@ -28,6 +28,16 @@ async def update_from_esp32(data: schemas.FromESP32, db: Session = Depends(get_d
 
     return {"status": "OK", "saved_slot": len(data.slots)}
 
+@router.post("/update-gate")
+async def update_gate_from_esp32(data: schemas.FromESP33_gate, db: Session = Depends(get_db)):
+    print("(Gate) Received from ESP32:", data.dict())
+
+    for gate in db.query(models.Aktuator):
+        
+        pass
+
+    db.commit()
+    return {"status": "OK", "saved_slot": len(data.slots)}
 
 # ============================
 #   Backend → ESP32 (GET)

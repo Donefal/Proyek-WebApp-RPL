@@ -171,8 +171,15 @@ class SlotDetection(BaseModel):
     occupied: bool # Slot sedang ada mobilnya
     alarmed: bool # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
 
-class FromESP32(BaseModel):
+class GateCondition(BaseModel):
+    id_slot: int
+    condition: str
+
+class FromESP32_detection(BaseModel):
     slots: list[SlotDetection]
+
+class FromESP33_gate(BaseModel):
+    gates: list[GateCondition]
 
 # API -> ESP32 -------------------------------
 class SlotData(BaseModel):
