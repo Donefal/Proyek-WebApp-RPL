@@ -672,6 +672,15 @@ function startCountdown(expiry) {
   clearDurationTimer();
   
   function tick() {
+    // If booking has been confirmed (checked-in), stop countdown and never expire
+    if (state.activeBooking && state.activeBooking.status === "checked-in") {
+      clearCountdown();
+      if (elements.bookingFields.countdown) {
+        elements.bookingFields.countdown.textContent = "Sedang parkir";
+      }
+      return;
+    }
+
     const diff = new Date(expiry).getTime() - Date.now();
     if (diff <= 0) {
       // Time expired - auto cancel booking
@@ -702,6 +711,10 @@ function startCountdown(expiry) {
 }
 
 async function cancelExpiredBooking() {
+  // Do not cancel if already checked-in; QR should no longer cause auto-expire
+  if (state.activeBooking && state.activeBooking.status === "checked-in") {
+    return;
+  }
   try {
     await apiFetch("/parking/cancel", {
       method: "POST",
