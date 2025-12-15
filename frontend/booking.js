@@ -271,6 +271,12 @@ function startCountdown(expiry) {
   clearCountdown();
   clearDurationTimer();
   
+  // Show countdown card
+  const countdownCard = document.getElementById("countdownCard");
+  if (countdownCard) {
+    countdownCard.style.display = "flex";
+  }
+  
   function tick() {
     const diff = new Date(expiry).getTime() - Date.now();
     if (diff <= 0) {
@@ -278,6 +284,11 @@ function startCountdown(expiry) {
       bookingElements.qrExpiredHint.classList.remove("hidden");
       bookingElements.qrExpiredHint.textContent = "⚠️ QR kadaluarsa, booking otomatis dibatalkan.";
       clearCountdown();
+      
+      // Hide countdown card
+      if (countdownCard) {
+        countdownCard.style.display = "none";
+      }
       
       // Auto cancel booking
       cancelExpiredBooking();
@@ -292,7 +303,7 @@ function startCountdown(expiry) {
     // Update countdown in UI if element exists
     const countdownElement = document.querySelector("[data-field='countdown']");
     if (countdownElement) {
-      countdownElement.textContent = `Waktu tersisa: ${countdownText}`;
+      countdownElement.textContent = countdownText;
     }
   }
   
@@ -318,6 +329,11 @@ function clearCountdown() {
   if (bookingState.countdownInterval) {
     clearInterval(bookingState.countdownInterval);
     bookingState.countdownInterval = null;
+  }
+  // Hide countdown card
+  const countdownCard = document.getElementById("countdownCard");
+  if (countdownCard) {
+    countdownCard.style.display = "none";
   }
 }
 

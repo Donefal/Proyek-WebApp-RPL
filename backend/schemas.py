@@ -173,7 +173,7 @@ class SlotDetection(BaseModel):
     alarmed: bool # Slot yg belum confirm tapi sdh occupied (alarm bunyi)
 
 class GateCondition(BaseModel):
-    id_slot: int
+    id_gate: int
     condition: str
 
 class FromESP32_detection(BaseModel):

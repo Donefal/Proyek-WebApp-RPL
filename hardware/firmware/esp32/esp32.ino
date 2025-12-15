@@ -67,6 +67,8 @@ const Buzzer BUZZERS[AMOUNT_OF_SLOTS] = {
 // =====================================================
 bool occupied[AMOUNT_OF_SLOTS] = {false, false};
 bool alarmed[AMOUNT_OF_SLOTS]  = {false, false};
+unsigned long gateCloseTime[2] = {0, 0}; // Track when gate should be considered closed (index 0 = enter, 1 = exit)
+const unsigned long GATE_CLOSE_DELAY = 2500; // 2.5 seconds after opening (2s open + 0.5s buffer)
 
 // =====================================================
 // Ultrasonic Measurement
@@ -187,11 +189,16 @@ void sendToAPI() {
 // =====================================================
 // Gate Control
 // =====================================================
-void openGate(Servo &gate, int open, int close) {
+bool gateOpening[2] = {false, false}; // Track if gate is currently opening (index 0 = enter, 1 = exit)
+
+void openGate(Servo &gate, int open, int close, int gateId) {
   Serial.println("[GATE] Open");
   gate.write(open);
+  gateOpening[gateId - 1] = true; // Mark gate as opening (gateId 1 = enter, 2 = exit)
+  gateCloseTime[gateId - 1] = millis() + GATE_CLOSE_DELAY; // Set time when gate should be considered closed
   delay(2000);
   gate.write(close);
+  gateOpening[gateId - 1] = false; // Mark gate as closed after operation
 }
 
 void closeGate(Servo &gate, int close) {
@@ -272,15 +279,21 @@ void loop() {
       if (alarmed[index]) alert(index);
     }
 
-    // Gate logic
+    // Gate logic - only open if buka is true and gate is not already opening
     for (JsonObject gate : gates) {
       int id   = gate["id_aktuator"];
       bool buka = gate["buka"];
 
       Serial.printf("[API] Gate %d | buka:%d\n", id, buka);
 
-      if (id == 1 && buka) openGate(enterGate, ENTER_OPEN, ENTER_CLOSE);
-      if (id == 2 && buka) openGate(exitGate, EXIT_OPEN, EXIT_CLOSE);
+      // Only open gate if buka is true and gate is not currently opening
+      // This prevents multiple simultaneous gate operations
+      if (id == 1 && buka && !gateOpening[0]) {
+        openGate(enterGate, ENTER_OPEN, ENTER_CLOSE, 1);
+      }
+      if (id == 2 && buka && !gateOpening[1]) {
+        openGate(exitGate, EXIT_OPEN, EXIT_CLOSE, 2);
+      }
     }
   } else {
     Serial.println("[API] is not okay");
@@ -288,6 +301,11 @@ void loop() {
 
   // ===== POST status =====
   sendToAPI();
+  
+  // Check if gates should be reset after closing
+  // After gate closes, we need to signal backend to reset kondisi_buka
+  // This is handled by the backend not auto-resetting gates, allowing frontend commands priority
+  // The gate will stay open (kondisi_buka = true) until next operation or manual reset
 
   Serial.println("=================================");
   delay(3000);

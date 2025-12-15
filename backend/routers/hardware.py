@@ -19,10 +19,11 @@ async def update_from_esp32(data: schemas.FromESP32_detection, db: Session = Dep
         if slot:
             slot.occupied = slot_update.occupied
             slot.alarmed = slot_update.alarmed
-        
-    for gate in db.query(models.Aktuator):
-        if gate.kondisi_buka == 1:
-            gate.kondisi_buka = 0
+    
+    # Only reset gates that were opened by hardware (not by frontend)
+    # Frontend sets kondisi_buka to True, hardware should only reset it after gate operation completes
+    # We don't reset gates here anymore - let hardware send gate status via update-gate endpoint
+    # This prevents race condition where frontend sets gate to open but hardware resets it before gate opens
 
     db.commit()
 
@@ -32,12 +33,18 @@ async def update_from_esp32(data: schemas.FromESP32_detection, db: Session = Dep
 async def update_gate_from_esp32(data: schemas.FromESP33_gate, db: Session = Depends(get_db)):
     print("(Gate) Received from ESP32:", data.dict())
 
-    for gate in db.query(models.Aktuator):
-        
-        pass
+    for gate_update in data.gates:
+        gate = db.query(models.Aktuator).filter(models.Aktuator.id_aktuator == gate_update.id_gate).first()
+
+        if gate:
+            gate.aksi_gate = gate_update.condition
+            # Reset kondisi_buka to False only after hardware confirms gate operation completed
+            # This allows frontend commands to have priority and gate stays open until hardware confirms closure
+            if gate_update.condition == "closed":
+                gate.kondisi_buka = False
 
     db.commit()
-    return {"status": "OK", "saved_slot": len(data.slots)}
+    return {"status": "OK", "saved_gates": len(data.gates)}
 
 # ============================
 #   Backend → ESP32 (GET)

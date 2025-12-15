@@ -134,7 +134,8 @@ def create_booking(
     if not slot:
         raise HTTPException(status_code=404, detail="Slot tidak ditemukan")
     
-    if slot.booked or slot.occupied:
+    # Prevent booking if slot is booked, occupied, or alarmed
+    if slot.booked or slot.occupied or slot.alarmed:
         raise HTTPException(status_code=400, detail="Lahan tidak tersedia")
     
     # Check for existing active booking
