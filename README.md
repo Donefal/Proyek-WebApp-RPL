@@ -35,3 +35,6 @@ npm run dev
 - Frontend: `http://localhost:5001`
 - Backend: `http://localhost:8000/docs`
 - Database: Buka `phpmyadmin` via menu laragon (jika belum)
+
+### 5. Run Cloudflare
+- CMD: cloudflared tunnel run parkingly-tunnel

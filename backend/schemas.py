@@ -108,6 +108,7 @@ class Aktuator(BaseModel):
     nama_aktuator: str
     usable: bool
     kondisi_buka: bool
+    aksi_gate: str
 
     class Config:
         from_attributes = True
