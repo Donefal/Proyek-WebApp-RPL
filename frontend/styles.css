@@ -2574,19 +2574,40 @@ td {
 }
 
 .stat-icon-admin.available {
-  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
-  color: #14532d;
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: green;
 }
 
 .stat-icon-admin.occupied {
-  background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
-  color: #7f1d1d;
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: red;
+}
+
+.stat-icon-admin.booked {
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: #1e3a8a;
+}
+
+.stat-icon-admin.confirmed {
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: black;
+}
+
+.stat-icon-admin.alert {
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: #1e3a8a;
+}
+
+.stat-icon-admin.unknown {
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
+  color: #1e3a8a;
 }
 
 .stat-icon-admin.total {
-  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  background: linear-gradient(135deg, #edd7f7 0%, #f1e0ff 100%);
   color: #1e3a8a;
 }
+
 
 .stat-content-admin {
   flex: 1;
