@@ -127,14 +127,16 @@ def scan_qr(
         raise HTTPException(status_code=404, detail="QR tidak ditemukan atau sudah tidak valid")
     
     # Check if QR token expired
+    # Note: Expiry only blocks "enter". For "exit" (checked-in), allow even if QR past TTL.
     now = get_now_gmt7()
-    if booking.qr_expires_at:
-        if booking.qr_expires_at.tzinfo is None:
-            qr_expires_at_aware = booking.qr_expires_at.replace(tzinfo=GMT7)
-        else:
-            qr_expires_at_aware = booking.qr_expires_at
-        if qr_expires_at_aware < now:
-            raise HTTPException(status_code=400, detail="QR code sudah kadaluarsa")
+    if action == "enter":
+        if booking.qr_expires_at:
+            if booking.qr_expires_at.tzinfo is None:
+                qr_expires_at_aware = booking.qr_expires_at.replace(tzinfo=GMT7)
+            else:
+                qr_expires_at_aware = booking.qr_expires_at
+            if qr_expires_at_aware < now:
+                raise HTTPException(status_code=400, detail="QR code sudah kadaluarsa")
     
     if action == "enter":
         if booking.status == "checked-in":
