@@ -66,6 +66,7 @@ class Aktuator(Base):
     nama_aktuator = Column(String(100))
     usable = Column(Boolean)
     kondisi_buka = Column(Boolean)
+    aksi_gate = Column(String(100))
     id_mikrokontroler = Column(Integer,
                                ForeignKey("mikrokontroler.id_mikrokontroler", ondelete="CASCADE"))
 
