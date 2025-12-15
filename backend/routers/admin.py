@@ -73,9 +73,22 @@ def get_admin_spots(
     
     spots = []
     for slot in slots:
-        is_booked = slot.booked
-        is_occupied = slot.occupied
-        is_available = not is_booked and not is_occupied
+        # Availability is driven only by `booked`
+        is_available = not slot.booked
+
+        # Derive status consistent with user view
+        if not slot.booked and not slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "available"
+        elif slot.booked and not slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "booked"
+        elif slot.booked and slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "confirmed"
+        elif slot.booked and slot.confirmed and slot.occupied and not slot.alarmed:
+            status = "occupied"
+        elif (not slot.booked) and (not slot.confirmed) and slot.occupied and slot.alarmed:
+            status = "alert"
+        else:
+            status = "unknown"
         
         spots.append({
             "id": f"S{slot.id_slot}",
@@ -83,6 +96,7 @@ def get_admin_spots(
             "code": f"P-{slot.id_slot}",
             "level": 1,
             "isAvailable": is_available,
+            "status": status,
             "ratePerHour": FIRST_HOUR_RATE
         })
     

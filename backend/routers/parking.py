@@ -88,11 +88,22 @@ def get_spots(
     
     spots = []
     for slot in slots:
-        # Check if slot is booked
-        is_booked = slot.booked
-       # is_occupied = slot.occupied -- disable occupied
-       # is_available = not is_booked and not is_occupied
-        is_available = not is_booked
+        # Availability is driven only by `booked` (business rule)
+        is_available = not slot.booked
+
+        # Derive human-readable status based on the requested combinations
+        if not slot.booked and not slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "available"
+        elif slot.booked and not slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "booked"
+        elif slot.booked and slot.confirmed and not slot.occupied and not slot.alarmed:
+            status = "confirmed"
+        elif slot.booked and slot.confirmed and slot.occupied and not slot.alarmed:
+            status = "occupied"
+        elif (not slot.booked) and (not slot.confirmed) and slot.occupied and slot.alarmed:
+            status = "alert"
+        else:
+            status = "unknown"
 
         # Get mikrokontroler info
         mikrokontroler = db.query(models.Mikrokontroler).filter(
@@ -105,6 +116,7 @@ def get_spots(
             "code": f"P-{slot.id_slot}",
             "level": 1,
             "isAvailable": is_available,
+            "status": status,
             "ratePerHour": FIRST_HOUR_RATE
         })
     
@@ -129,13 +141,13 @@ def create_booking(
     except:
         raise HTTPException(status_code=400, detail="spotId tidak valid")
     
-    # Check if slot exists and is available
+    # Check if slot exists and availability based only on `booked`
     slot = db.query(models.Slot).filter(models.Slot.id_slot == slot_id).first()
     if not slot:
         raise HTTPException(status_code=404, detail="Slot tidak ditemukan")
     
-    # Prevent booking if slot is booked, occupied, or alarmed
-    if slot.booked or slot.occupied or slot.alarmed:
+    # Business rule: cannot book when already booked; occupied/alarmed do not block booking
+    if slot.booked:
         raise HTTPException(status_code=400, detail="Lahan tidak tersedia")
     
     # Check for existing active booking
