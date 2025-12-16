@@ -85,7 +85,7 @@ def get_admin_spots(
             status = "confirmed"
         elif slot.booked and slot.confirmed and slot.occupied and not slot.alarmed:
             status = "occupied"
-        elif (not slot.booked) and (not slot.confirmed) and slot.occupied and slot.alarmed:
+        elif (not slot.confirmed) and slot.occupied and slot.alarmed:
             status = "alert"
         else:
             status = "unknown"

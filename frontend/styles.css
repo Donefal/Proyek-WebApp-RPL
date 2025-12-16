@@ -2650,14 +2650,29 @@ td {
   transition: all 0.3s ease;
 }
 
-.admin-spot-card.available {
-  background: linear-gradient(135deg, #ecfccb 0%, #d9f99d 100%);
-  border-color: #bef264;
+.admin-spot-card.status-alert {
+  background: #ffe5e5;
+  border-color: #e74c3c;
 }
 
-.admin-spot-card.occupied {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border-color: #fca5a5;
+.admin-spot-card.status-confirmed {
+  background: #e8f8f0;
+  border-color: #27ae60;
+}
+
+.admin-spot-card.status-occupied {
+  background: #e8f8f0;
+  border-color: #27ae60;
+}
+
+.admin-spot-card.status-booked {
+  background: #d5e8fd;
+  border-color: #1571af;
+}
+
+.admin-spot-card.status-unknown {
+  background: #eaefa2;
+  border-color: #4a3501;
 }
 
 .admin-spot-card:hover {
