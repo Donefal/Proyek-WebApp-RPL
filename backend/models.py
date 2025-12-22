@@ -22,7 +22,7 @@ class Customer(Base):
     username = Column(String(100), unique=True)
     password = Column(String(100))
     email = Column(String(100), unique=True)
-    notelp = Column(String (16))     
+    notelp = Column(String (16), unique=True)     
     saldo = Column(Integer)
 
 
@@ -83,7 +83,7 @@ class Admin(Base):
     username = Column(String(100), unique=True)
     password = Column(String(100))
     email = Column(String(100), unique=True)
-    notelp = Column(String(16))
+    notelp = Column(String(16), unique=True)
 
 # ==========================
 # BOOKING TABLE

@@ -35,8 +35,12 @@ def register(user_data: schemas.RegisterRequest, db: Session = Depends(get_db)):
         existing_customer = db.query(models.Customer).filter(
             models.Customer.email == user_data.email
         ).first()
+
+        existing_admin = db.query(models.Admin).filter(
+            models.Admin.email == user_data.email
+        ).first()
         
-        if existing_customer:
+        if existing_customer or existing_admin:
             raise HTTPException(
                 status_code=409, 
                 detail="Email sudah terdaftar"
