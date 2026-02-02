@@ -7,8 +7,8 @@
 // =====================================================
 // WiFi Credentials
 // =====================================================
-const char* ssid     = "DihKoqAku";
-const char* password = "BocilTuyul30";
+const char* ssid     = "donivalojagobanget";
+const char* password = "donivalo99";
 
 // =====================================================
 // API Endpoints (HTTPS - Cloudflare)
