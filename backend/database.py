@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 DB_USER = "web"
 DB_PASSWORD = ""     # atau password MySQL kamu
-DB_HOST = "127.0.0.1"
+DB_HOST = "192.168.4.13:8081"
 DB_NAME = "fastapi_db"
 
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
