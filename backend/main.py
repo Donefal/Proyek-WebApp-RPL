@@ -4,9 +4,9 @@ from backend.routers import database_op, hardware, auth, parking, wallet, admin
 
 app = FastAPI()
 origins = [
-    "http://localhost:8080",   # untuk development
-    "http://localhost:8880",   # jika frontend lokal
-    "https://web.parkingly.space",  # domain frontend produksi
+    "http://localhost:3000",   # untuk development
+    "http://localhost:3001",   # jika frontend lokal
+    "https://parkingly.saikeno.space",  # domain frontend produksi
 ]
 
 # CORS Configuration - Allow all origins for cross-device access
