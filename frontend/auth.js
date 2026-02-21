@@ -3,7 +3,7 @@ const getApiBaseUrl = () => {
   const hostname = window.location.hostname;
   // If accessing from localhost, use localhost:8000
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://192.168.4.13:3001';
+    return 'https://fastapi.saikeno.space';
   }
   // Otherwise, use the same hostname with port 8000
   return `https://fastapi.saikeno.space`;
